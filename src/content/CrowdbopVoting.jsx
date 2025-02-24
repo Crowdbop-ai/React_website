@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { Button, Container, Row, Col } from "react-bootstrap";
 
 // Import images
 import londonJeans from "../assets/london_jeans.jpg";
@@ -72,56 +73,54 @@ const CrowdbopVoting = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-center mb-12">
+    <Container className="py-5">
+      <h1 className="text-center mb-5" style={{ fontWeight: "bold" }}>
         WHICH PRODUCT DO YOU PREFER?
       </h1>
 
-      <div className="flex justify-center space-x-12 mb-16">
+      <Row className="justify-content-center">
         {currentPair.map((index) => {
           const product = products[index];
           return (
-            <div
-              key={product.id}
-              className="flex flex-col items-center text-center"
-            >
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full object-contain mb-4"
-              />
-
-              <div className="text-center mt-2 mb-4">
-                <h3 className="font-bold">{product.brand}</h3>
+            <Col md={5} className="mb-4" key={product.id}>
+              <div className="text-center">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="img-fluid mb-3"
+                  style={{ maxHeight: "400px", objectFit: "contain" }}
+                />
+                <h3 className="mt-2 font-weight-bold">{product.brand}</h3>
                 <p>{product.name}</p>
-                <p className="mt-1">${product.price.toFixed(2)}</p>
-              </div>
+                <p className="font-weight-bold">${product.price.toFixed(2)}</p>
 
-              <button
-                onClick={() => handleVote(product.id)}
-                style={{ backgroundColor: "#E85C41" }}
-                className="text-white px-12 py-2 
-                           font-bold uppercase tracking-wider w-full md:w-auto"
-              >
-                VOTE
-              </button>
-            </div>
+                <Button
+                  variant="warning"
+                  onClick={() => handleVote(product.id)}
+                  className="text-white font-weight-bold text-uppercase"
+                  style={{ backgroundColor: "#EE4A1B", color: "black", width: "100%", fontWeight: "bold"}}
+                  >
+                  Vote
+                </Button>
+              </div>
+            </Col>
           );
         })}
-      </div>
+      </Row>
 
-      <div className="text-center mt-16">
-        <h2 className="text-3xl font-bold mb-4">Tired of Voting?</h2>
-        <Link
-          to="/rankings"
-          style={{ backgroundColor: "#E85C41" }}
-          className="text-white px-12 py-2 
-                           font-bold uppercase tracking-wider w-full md:w-auto"
-        >
-          SKIP TO RANKINGS
+      <div className="text-center mt-5">
+        <h2 className="mb-4 font-weight-bold">Tired of Voting?</h2>
+        <Link to="/rankings">
+          <Button
+            variant="warning"
+            className="text-white font-weight-bold text-uppercase"
+            style={{ backgroundColor: "#EE4A1B", color: "black", padding: "10px 30px", fontWeight: "bold"}}
+            >
+            Skip to Rankings
+          </Button>
         </Link>
       </div>
-    </div>
+    </Container>
   );
 };
 
