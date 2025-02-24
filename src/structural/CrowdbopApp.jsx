@@ -1,0 +1,27 @@
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import CrowdbopLayout from './CrowdbopLayout';
+import CrowdbopHome from '../content/CrowdbopHome';
+import CrowdbopRankings from '../content/CrowdbopRankings';
+
+
+function CrowdbopApp() {
+
+
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<CrowdbopLayout />}>
+                    {/*  Add a "home route" */}
+                    <Route index element={<CrowdbopHome />} />
+                    <Route path="/rankings" element={<CrowdbopRankings />}></Route>
+                    {/* TODO: Add a route for each page */}
+                    {/* TODO: Add a route to match with * for all other paths */}
+                    {/* <Route path="*" element={?} /> */}
+                </Route>
+            </Routes>
+        </BrowserRouter>
+    );
+}
+
+export default CrowdbopApp;
