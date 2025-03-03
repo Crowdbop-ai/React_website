@@ -1,76 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button, Container, Row, Col } from "react-bootstrap";
-
-// Import images
-import londonJeans from "../assets/london_jeans.jpg";
-import pennyUtility from "../assets/penny_utility_pants.jpg";
-import maxiDress from "../assets/field_of_dreams_maxi_dress.jpg";
-import sneakers from "../assets/cloud_6_sneakers.jpg";
-import tankDress from "../assets/catch_a_wave_tank_dress.jpg";
+import { votingApi } from "../services/api"; // Import the API service
 
 const CrowdbopVoting = () => {
-  // Sample product data with imported images
-  const [products] = useState([
-    {
-      id: 1,
-      brand: "Le Superbe",
-      name: "Catch A Wave Tank Dress",
-      price: 395.0,
-      image: tankDress,
-    },
-    {
-      id: 2,
-      brand: "Lioness",
-      name: "Field of Dreams Maxi Dress",
-      price: 109.0,
-      image: maxiDress,
-    },
-    {
-      id: 3,
-      brand: "On",
-      name: "Cloud 6 Sneakers",
-      price: 139.95,
-      image: sneakers,
-    },
-    {
-      id: 4,
-      brand: "Frame",
-      name: "London Jeans",
-      price: 248.0,
-      image: londonJeans,
-    },
-    {
-      id: 5,
-      brand: "AG",
-      name: "Penny Utility Pants",
-      price: 225.0,
-      image: pennyUtility,
-    },
-  ]);
+  const [products, setProducts] = useState([]); // Store products from DynamoDB
+  const [currentPair, setCurrentPair] = useState([]); // Track the current voting pair
+  const [isLoading, setIsLoading] = useState(true); // Loading state
 
-  // Track which products we're currently displaying
-  const [currentPair, setCurrentPair] = useState([0, 1]);
-  const [votes, setVotes] = useState({});
+  // Fetch a new voting pair when the component mounts
+  useEffect(() => {
+    const fetchVotePair = async () => {
+      try {
+        const pair = await votingApi.fetchVotePair();
+        setProducts(pair); // Set the fetched products
+        setCurrentPair([0, 1]); // Set the initial pair indices
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching vote pair:", error);
+      }
+    };
 
-  const handleVote = (productId) => {
-    // Update votes
-    setVotes((prev) => ({
-      ...prev,
-      [productId]: (prev[productId] || 0) + 1,
-    }));
+    fetchVotePair();
+  }, []);
 
-    // Move to next pair - for simplicity, just cycle through the products
-    setCurrentPair((prevPair) => {
-      const nextIndex1 = (prevPair[0] + 2) % products.length;
-      const nextIndex2 = (prevPair[1] + 2) % products.length;
+  // Handle voting
+  const handleVote = async (winnerProductSin) => {
+    const loserProductSin = products[currentPair[0]].productSin === winnerProductSin
+      ? products[currentPair[1]].productSin
+      : products[currentPair[0]].productSin;
 
-      // Make sure we don't show the same product twice
-      return nextIndex1 === nextIndex2
-        ? [nextIndex1, (nextIndex1 + 1) % products.length]
-        : [nextIndex1, nextIndex2];
-    });
+    try {
+      // Submit the vote
+      await votingApi.submitVote(winnerProductSin, loserProductSin);
+
+      // Fetch a new voting pair
+      const newPair = await votingApi.fetchVotePair();
+      setProducts(newPair);
+      setCurrentPair([0, 1]); // Reset pair indices
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Container className="py-5">
@@ -82,24 +57,24 @@ const CrowdbopVoting = () => {
         {currentPair.map((index) => {
           const product = products[index];
           return (
-            <Col md={5} className="mb-4" key={product.id}>
+            <Col md={5} className="mb-4" key={product.productSin}>
               <div className="text-center">
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={product.imageUrl}
+                  alt={product.productName}
                   className="img-fluid mb-3"
-                  style={{ maxHeight: "400px", objectFit: "contain" }}
+                  style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
                 />
                 <h3 className="mt-2 font-weight-bold">{product.brand}</h3>
-                <p>{product.name}</p>
-                <p className="font-weight-bold">${product.price.toFixed(2)}</p>
+                <p>{product.productName}</p>
+                <p className="font-weight-bold">${product.price?.toFixed(2)}</p>
 
                 <Button
                   variant="warning"
-                  onClick={() => handleVote(product.id)}
+                  onClick={() => handleVote(product.productSin)}
                   className="text-white font-weight-bold text-uppercase"
-                  style={{ backgroundColor: "#EE4A1B", color: "black", width: "100%", fontWeight: "bold"}}
-                  >
+                  style={{ backgroundColor: "#EE4A1B", color: "black", width: "100%", fontWeight: "bold" }}
+                >
                   Vote
                 </Button>
               </div>
@@ -114,8 +89,8 @@ const CrowdbopVoting = () => {
           <Button
             variant="warning"
             className="text-white font-weight-bold text-uppercase"
-            style={{ backgroundColor: "#EE4A1B", color: "black", padding: "10px 30px", fontWeight: "bold"}}
-            >
+            style={{ backgroundColor: "#EE4A1B", color: "black", padding: "10px 30px", fontWeight: "bold" }}
+          >
             Skip to Rankings
           </Button>
         </Link>
