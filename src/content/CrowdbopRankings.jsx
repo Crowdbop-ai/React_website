@@ -1,10 +1,12 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Col, Container, Row } from "react-bootstrap";
 import londonJeans from "../assets/london_jeans.jpg"
 import pennyUtility from "../assets/penny_utility_pants.jpg"
 import maxiDress from "../assets/field_of_dreams_maxi_dress.jpg"
 import sneakers from "../assets/cloud_6_sneakers.jpg"
 import tankDress from "../assets/catch_a_wave_tank_dress.jpg"
+import { votingApi } from "../api";
+
 
 let inOrderRankings = [{
     name: "London Jeans",
@@ -34,6 +36,19 @@ let inOrderRankings = [{
 }]
 
 function CrowdbopRankings() {
+    const [rankingsData, setRankingsData] = useState([]);
+    useEffect(() => {
+        const fetchLeaderboard = async () => {
+            const initializeDb = await votingApi.initialize();
+            console.log("Initialize:", initializeDb);   
+            const rankings = await votingApi.fetchVotePair();
+            setRankingsData(rankings);
+            console.log("Rankings:", rankings);
+        }
+        fetchLeaderboard();
+    }, []);
+
+
     return <>
         <h1>TOP RANKED PRODUCTS</h1>
         <Container fluid style={{ marginTop: "2rem" }}>
