@@ -1,49 +1,91 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button, Container, Row, Col } from "react-bootstrap";
-import { votingApi } from "../services/api"; // Import the API service
+import placeholderImage from "../assets/loading.JPG"; // Import the placeholder image
 
 const CrowdbopVoting = () => {
-  const [products, setProducts] = useState([]); // Store products from DynamoDB
-  const [currentPair, setCurrentPair] = useState([]); // Track the current voting pair
-  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [products, setProducts] = useState([]);
+  const [currentPair, setCurrentPair] = useState([0, 1]);
+  const [isLoading, setIsLoading] = useState(false); // Track loading state
 
-  // Fetch a new voting pair when the component mounts
+  // Fetch products from the API
   useEffect(() => {
-    const fetchVotePair = async () => {
+    const fetchProducts = async () => {
       try {
-        const pair = await votingApi.fetchVotePair();
-        setProducts(pair); // Set the fetched products
-        setCurrentPair([0, 1]); // Set the initial pair indices
-        setIsLoading(false);
+        const response = await fetch(
+          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=shoes" // Add category query parameter
+        );
+        const data = await response.json();
+        setProducts(data.products);
       } catch (error) {
-        console.error("Error fetching vote pair:", error);
+        console.error("Error fetching products:", error);
       }
     };
 
-    fetchVotePair();
+    fetchProducts();
   }, []);
 
-  // Handle voting
-  const handleVote = async (winnerProductSin) => {
-    const loserProductSin = products[currentPair[0]].productSin === winnerProductSin
-      ? products[currentPair[1]].productSin
-      : products[currentPair[0]].productSin;
+  const handleVote = (winnerIndex) => {
+    setIsLoading(true); // Set loading state to true
 
-    try {
-      // Submit the vote
-      await votingApi.submitVote(winnerProductSin, loserProductSin);
+    // Determine the winner and loser
+    const winner = products[currentPair[winnerIndex]];
+    const loser = products[currentPair[1 - winnerIndex]]; // The other product is the loser
 
-      // Fetch a new voting pair
-      const newPair = await votingApi.fetchVotePair();
-      setProducts(newPair);
-      setCurrentPair([0, 1]); // Reset pair indices
-    } catch (error) {
-      console.error("Error submitting vote:", error);
-    }
+    // Send the vote result to the API
+    const sendVote = async () => {
+      try {
+        const response = await fetch(
+          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/vote",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              body: JSON.stringify({
+                winnerSIN: winner.ProductSIN,
+                loserSIN: loser.ProductSIN,
+                categoryId: "shoes", // Hardcoded category for now
+              }),
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to submit vote");
+        }
+
+        console.log("Vote submitted successfully!");
+      } catch (error) {
+        console.error("Error submitting vote:", error);
+      }
+    };
+
+    // Fetch a new pair of products after submitting the vote
+    const fetchNewPair = async () => {
+      try {
+        const response = await fetch(
+          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=shoes" // Add category query parameter
+        );
+        const data = await response.json();
+        setProducts(data.products);
+        setCurrentPair([0, 1]); // Reset to the first two products
+      } catch (error) {
+        console.error("Error fetching new product pair:", error);
+      } finally {
+        // After 0.5 seconds, set loading state to false
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+      }
+    };
+
+    // Submit the vote and fetch a new pair
+    sendVote().then(fetchNewPair);
   };
 
-  if (isLoading) {
+  if (products.length === 0) {
     return <div>Loading...</div>;
   }
 
@@ -56,24 +98,58 @@ const CrowdbopVoting = () => {
       <Row className="justify-content-center">
         {currentPair.map((index) => {
           const product = products[index];
+          const imageUrl = `https://m.media-amazon.com/images/G/01/Shopbop/p/${product.PrimaryImageURL}`;
+
           return (
-            <Col md={5} className="mb-4" key={product.productSin}>
+            <Col md={5} className="mb-4" key={product.ProductSIN}>
               <div className="text-center">
-                <img
-                  src={product.imageUrl}
-                  alt={product.productName}
-                  className="img-fluid mb-3"
-                  style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
-                />
-                <h3 className="mt-2 font-weight-bold">{product.brand}</h3>
-                <p>{product.productName}</p>
-                <p className="font-weight-bold">${product.price?.toFixed(2)}</p>
+                {/* Show placeholder image and loading text if isLoading is true */}
+                {isLoading ? (
+                  <>
+                    <img
+                      src={placeholderImage}
+                      alt="Loading..."
+                      className="img-fluid mb-3"
+                      style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                    />
+                    <h3 className="mt-2 font-weight-bold">Loading...</h3>
+                    <p>Loading...</p>
+                    <p className="font-weight-bold">Loading...</p>
+                  </>
+                ) : (
+                  <>
+                    <img
+                      src={imageUrl}
+                      alt={product.ProductName}
+                      className="img-fluid mb-3"
+                      style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                    />
+                    <h3
+                      className="mt-2 font-weight-bold"
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {product.ProductName}
+                    </h3>
+                    <p>{product.DesignerName}</p>
+                    <p><b>${product.Price.toFixed(2)}</b></p>
+                  </>
+                )}
 
                 <Button
                   variant="warning"
-                  onClick={() => handleVote(product.productSin)}
+                  onClick={() => handleVote(index)} // Pass the index of the voted product
                   className="text-white font-weight-bold text-uppercase"
-                  style={{ backgroundColor: "#EE4A1B", color: "black", width: "100%", fontWeight: "bold" }}
+                  style={{
+                    backgroundColor: "#EE4A1B",
+                    color: "black",
+                    width: "100%",
+                    fontWeight: "bold",
+                  }}
+                  disabled={isLoading} // Disable button during loading
                 >
                   Vote
                 </Button>
@@ -89,12 +165,19 @@ const CrowdbopVoting = () => {
           <Button
             variant="warning"
             className="text-white font-weight-bold text-uppercase"
-            style={{ backgroundColor: "#EE4A1B", color: "black", padding: "10px 30px", fontWeight: "bold" }}
+            style={{
+              backgroundColor: "#EE4A1B",
+              color: "black",
+              padding: "10px 30px",
+              fontWeight: "bold",
+            }}
           >
             Skip to Rankings
           </Button>
         </Link>
       </div>
+
+      {/* TODO: Make category selection dynamic in the future */}
     </Container>
   );
 };
