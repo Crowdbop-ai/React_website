@@ -32,6 +32,12 @@ const CrowdbopVoting = () => {
     const winner = products[currentPair[winnerIndex]];
     const loser = products[currentPair[1 - winnerIndex]]; // The other product is the loser
 
+    // Log the winner's SIN and name
+    console.log("Voted on Product:", {
+      SIN: winner.ProductSIN,
+      Name: winner.ProductName,
+    });
+
     // Send the vote result to the API
     const sendVote = async () => {
       try {
@@ -43,11 +49,9 @@ const CrowdbopVoting = () => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              body: JSON.stringify({
-                winnerSIN: winner.ProductSIN,
-                loserSIN: loser.ProductSIN,
-                categoryId: "shoes", // Hardcoded category for now
-              }),
+              winnerSIN: winner.ProductSIN,
+              loserSIN: loser.ProductSIN,
+              categoryId: "shoes", // Hardcoded category for now
             }),
           }
         );
@@ -74,7 +78,7 @@ const CrowdbopVoting = () => {
       } catch (error) {
         console.error("Error fetching new product pair:", error);
       } finally {
-        // After 0.5 seconds, set loading state to false
+        // 0.5 seconds
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
@@ -103,7 +107,6 @@ const CrowdbopVoting = () => {
           return (
             <Col md={5} className="mb-4" key={product.ProductSIN}>
               <div className="text-center">
-                {/* Show placeholder image and loading text if isLoading is true */}
                 {isLoading ? (
                   <>
                     <img
@@ -141,7 +144,7 @@ const CrowdbopVoting = () => {
 
                 <Button
                   variant="warning"
-                  onClick={() => handleVote(index)} // Pass the index of the voted product
+                  onClick={() => handleVote(index)}
                   className="text-white font-weight-bold text-uppercase"
                   style={{
                     backgroundColor: "#EE4A1B",
