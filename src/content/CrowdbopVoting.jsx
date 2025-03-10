@@ -1,75 +1,98 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button, Container, Row, Col } from "react-bootstrap";
-
-// Import images
-import londonJeans from "../assets/london_jeans.jpg";
-import pennyUtility from "../assets/penny_utility_pants.jpg";
-import maxiDress from "../assets/field_of_dreams_maxi_dress.jpg";
-import sneakers from "../assets/cloud_6_sneakers.jpg";
-import tankDress from "../assets/catch_a_wave_tank_dress.jpg";
+import placeholderImage from "../assets/loading.JPG"; // Import the placeholder image
 
 const CrowdbopVoting = () => {
-  // Sample product data with imported images
-  const [products] = useState([
-    {
-      id: 1,
-      brand: "Le Superbe",
-      name: "Catch A Wave Tank Dress",
-      price: 395.0,
-      image: tankDress,
-    },
-    {
-      id: 2,
-      brand: "Lioness",
-      name: "Field of Dreams Maxi Dress",
-      price: 109.0,
-      image: maxiDress,
-    },
-    {
-      id: 3,
-      brand: "On",
-      name: "Cloud 6 Sneakers",
-      price: 139.95,
-      image: sneakers,
-    },
-    {
-      id: 4,
-      brand: "Frame",
-      name: "London Jeans",
-      price: 248.0,
-      image: londonJeans,
-    },
-    {
-      id: 5,
-      brand: "AG",
-      name: "Penny Utility Pants",
-      price: 225.0,
-      image: pennyUtility,
-    },
-  ]);
+  const [currentProducts, setCurrentProducts] = useState([]); // Current pair of products to display
+  const [nextProducts, setNextProducts] = useState([]); // Pre-fetched next pair of products
+  const [isLoading, setIsLoading] = useState(true); // Track loading state (only for initial load)
 
-  // Track which products we're currently displaying
-  const [currentPair, setCurrentPair] = useState([0, 1]);
-  const [votes, setVotes] = useState({});
+  // Fetch the first pair of products on page load
+  useEffect(() => {
+    const fetchInitialProducts = async () => {
+      try {
+        const response = await fetch(
+          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=shoes"
+        );
+        const data = await response.json();
+        setCurrentProducts(data.products);
 
-  const handleVote = (productId) => {
-    // Update votes
-    setVotes((prev) => ({
-      ...prev,
-      [productId]: (prev[productId] || 0) + 1,
-    }));
+        // Fetch the next pair immediately after the first pair is fetched
+        fetchNextPair();
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        // After 1 second, hide the loading placeholder
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000);
+      }
+    };
 
-    // Move to next pair - for simplicity, just cycle through the products
-    setCurrentPair((prevPair) => {
-      const nextIndex1 = (prevPair[0] + 2) % products.length;
-      const nextIndex2 = (prevPair[1] + 2) % products.length;
+    fetchInitialProducts();
+  }, []);
 
-      // Make sure we don't show the same product twice
-      return nextIndex1 === nextIndex2
-        ? [nextIndex1, (nextIndex1 + 1) % products.length]
-        : [nextIndex1, nextIndex2];
+  // Function to fetch the next pair of products
+  const fetchNextPair = async () => {
+    try {
+      const response = await fetch(
+        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=shoes"
+      );
+      const data = await response.json();
+      setNextProducts(data.products);
+    } catch (error) {
+      console.error("Error fetching next product pair:", error);
+    }
+  };
+
+  const handleVote = (winnerIndex) => {
+    // Determine the winner and loser
+    const winner = currentProducts[winnerIndex];
+    const loser = currentProducts[1 - winnerIndex]; // The other product is the loser
+
+    // Log the winner's SIN and name
+    console.log("Voted on Product:", {
+      SIN: winner.ProductSIN,
+      Name: winner.ProductName,
     });
+
+    // Send the vote result to the API
+    const sendVote = async () => {
+      try {
+        const response = await fetch(
+          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/vote",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              winnerSIN: winner.ProductSIN,
+              loserSIN: loser.ProductSIN,
+              categoryId: "shoes", // Hardcoded category for now
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to submit vote");
+        }
+
+        console.log("Vote submitted successfully!");
+      } catch (error) {
+        console.error("Error submitting vote:", error);
+      }
+    };
+
+    // Submit the vote
+    sendVote();
+
+    // Replace the current pair with the pre-fetched next pair
+    setCurrentProducts(nextProducts);
+
+    // Fetch the next pair immediately
+    fetchNextPair();
   };
 
   return (
@@ -79,33 +102,81 @@ const CrowdbopVoting = () => {
       </h1>
 
       <Row className="justify-content-center">
-        {currentPair.map((index) => {
-          const product = products[index];
-          return (
-            <Col md={5} className="mb-4" key={product.id}>
+        {isLoading ? (
+          // Show loading placeholder only on initial load
+          <>
+            <Col md={5} className="mb-4">
               <div className="text-center">
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={placeholderImage}
+                  alt="Loading..."
                   className="img-fluid mb-3"
-                  style={{ maxHeight: "400px", objectFit: "contain" }}
+                  style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
                 />
-                <h3 className="mt-2 font-weight-bold">{product.brand}</h3>
-                <p>{product.name}</p>
-                <p className="font-weight-bold">${product.price.toFixed(2)}</p>
-
-                <Button
-                  variant="warning"
-                  onClick={() => handleVote(product.id)}
-                  className="text-white font-weight-bold text-uppercase"
-                  style={{ backgroundColor: "#EE4A1B", color: "black", width: "100%", fontWeight: "bold"}}
-                  >
-                  Vote
-                </Button>
+                <h3 className="mt-2 font-weight-bold">Loading...</h3>
+                <p>Loading...</p>
+                <p className="font-weight-bold">Loading...</p>
               </div>
             </Col>
-          );
-        })}
+            <Col md={5} className="mb-4">
+              <div className="text-center">
+                <img
+                  src={placeholderImage}
+                  alt="Loading..."
+                  className="img-fluid mb-3"
+                  style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                />
+                <h3 className="mt-2 font-weight-bold">Loading...</h3>
+                <p>Loading...</p>
+                <p className="font-weight-bold">Loading...</p>
+              </div>
+            </Col>
+          </>
+        ) : (
+          // Show the current pair of products
+          currentProducts.map((product, index) => {
+            const imageUrl = `https://m.media-amazon.com/images/G/01/Shopbop/p/${product.PrimaryImageURL}`;
+
+            return (
+              <Col md={5} className="mb-4" key={product.ProductSIN}>
+                <div className="text-center">
+                  <img
+                    src={imageUrl}
+                    alt={product.ProductName}
+                    className="img-fluid mb-3"
+                    style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                  />
+                  <h3
+                    className="mt-2 font-weight-bold"
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {product.ProductName}
+                  </h3>
+                  <p>{product.DesignerName}</p>
+                  <p><b>${product.Price.toFixed(2)}</b></p>
+
+                  <Button
+                    variant="warning"
+                    onClick={() => handleVote(index)}
+                    className="text-white font-weight-bold text-uppercase"
+                    style={{
+                      backgroundColor: "#EE4A1B",
+                      color: "black",
+                      width: "100%",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Vote
+                  </Button>
+                </div>
+              </Col>
+            );
+          })
+        )}
       </Row>
 
       <div className="text-center mt-5">
@@ -114,12 +185,19 @@ const CrowdbopVoting = () => {
           <Button
             variant="warning"
             className="text-white font-weight-bold text-uppercase"
-            style={{ backgroundColor: "#EE4A1B", color: "black", padding: "10px 30px", fontWeight: "bold"}}
-            >
+            style={{
+              backgroundColor: "#EE4A1B",
+              color: "black",
+              padding: "10px 30px",
+              fontWeight: "bold",
+            }}
+          >
             Skip to Rankings
           </Button>
         </Link>
       </div>
+
+      {/* TODO: Make category selection dynamic in the future */}
     </Container>
   );
 };
