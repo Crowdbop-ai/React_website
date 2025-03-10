@@ -30,9 +30,50 @@ img {
   padding-right: 1rem;
   display: inline-block;
 }
+
+/* Add these to your existing index.css file */
+
+/* For smooth transitions */
+* {
+  transition-property: background-color, transform, box-shadow, color, opacity;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* Ensure links with flex items display correctly */
 a {
   all: unset;
+  display: inline-block; /* This helps with the link that contains flex items */
 }
+
 a:hover {
   cursor: pointer;
+}
+
+/* Additional styling for the how-it-works grid items */
+.flex {
+  display: flex;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+/* Add to your media queries for responsive design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.3rem;
+  }
 }
