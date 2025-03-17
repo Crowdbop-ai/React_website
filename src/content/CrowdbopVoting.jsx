@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button, Container, Row, Col } from "react-bootstrap";
+import { Button, Container, Row, Col, Modal, Form } from "react-bootstrap";
 import placeholderImage from "../assets/loading.JPG"; // Import the placeholder image
 
 const CrowdbopVoting = () => {
   const [currentProducts, setCurrentProducts] = useState([]); // Current pair of products to display
   const [nextProducts, setNextProducts] = useState([]); // Pre-fetched next pair of products
   const [isLoading, setIsLoading] = useState(true); // Track loading state (only for initial load)
+  const [showModal, setShowModal] = useState(false); // Control modal visibility
+  const [userId, setUserId] = useState(sessionStorage.getItem("userId") || ""); // Get userId from session storage if it exists
 
   // Fetch the first pair of products on page load
   useEffect(() => {
@@ -46,7 +48,24 @@ const CrowdbopVoting = () => {
     }
   };
 
+  // Handle modal submission
+  const handleSubmit = () => {
+    if (userId.trim()) {
+      sessionStorage.setItem("userId", userId); // Store userId in session storage
+      setShowModal(false); // Close the modal
+    } else {
+      alert("Please enter a valid user ID.");
+    }
+  };
+
+  // Handle voting
   const handleVote = (winnerIndex) => {
+    if (!userId) {
+      alert("Please enter a user ID to vote.");
+      setShowModal(true); // Reopen the modal if no user ID is provided
+      return;
+    }
+
     // Determine the winner and loser
     const winner = currentProducts[winnerIndex];
     const loser = currentProducts[1 - winnerIndex]; // The other product is the loser
@@ -71,6 +90,7 @@ const CrowdbopVoting = () => {
               winnerSIN: winner.ProductSIN,
               loserSIN: loser.ProductSIN,
               categoryId: "shoes", // Hardcoded category for now
+              userId: userId, // Include the user ID in the vote submission
             }),
           }
         );
@@ -95,12 +115,64 @@ const CrowdbopVoting = () => {
     fetchNextPair();
   };
 
+  // Handle logout
+  const handleLogout = () => {
+    sessionStorage.removeItem("userId"); // Remove userId from session storage
+    setUserId(""); // Clear userId from state
+  };
+
   return (
     <Container className="py-5">
       <h1 className="text-center mb-5" style={{ fontWeight: "bold" }}>
         WHICH PRODUCT DO YOU PREFER?
       </h1>
 
+      {/* User ID Modal */}
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton={false}>
+          <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+            Enter Your User ID
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="userIdInput">
+              <Form.Label>User ID</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Ex: bbadger"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                style={{ fontFamily: "Arial, sans-serif" }}
+              />
+              <Form.Text className="text-muted">
+                This ID will be used to track your votes.
+              </Form.Text>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            style={{
+              backgroundColor: "#E85C41",
+              border: "none",
+              fontFamily: "'Archivo Black', sans-serif",
+            }}
+          >
+            Submit
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Product Display */}
       <Row className="justify-content-center">
         {isLoading ? (
           // Show loading placeholder only on initial load
@@ -169,6 +241,7 @@ const CrowdbopVoting = () => {
                       width: "100%",
                       fontWeight: "bold",
                     }}
+                    disabled={!userId} // Disable button if no user ID is provided
                   >
                     Vote
                   </Button>
@@ -179,6 +252,7 @@ const CrowdbopVoting = () => {
         )}
       </Row>
 
+      {/* Tired of Voting Section */}
       <div className="text-center mt-5">
         <h2 className="mb-4 font-weight-bold">Tired of Voting?</h2>
         <Link to="/rankings">
@@ -197,7 +271,41 @@ const CrowdbopVoting = () => {
         </Link>
       </div>
 
-      {/* TODO: Make category selection dynamic in the future */}
+      {/* Login/Logout Section */}
+      <div className="text-center mt-3">
+        {userId ? (
+          // If logged in, show User ID and Logout button
+          <>
+            <small>User ID: {userId}</small>
+            <Button
+              variant="link"
+              onClick={handleLogout}
+              style={{
+                color: "#E85C41",
+                fontSize: "0.8rem",
+                marginLeft: "10px",
+                textDecoration: "none",
+              }}
+            >
+              (Logout)
+            </Button>
+          </>
+        ) : (
+          // If not logged in, show Login button
+          <Button
+            variant="link"
+            onClick={() => setShowModal(true)}
+            style={{
+              color: "#E85C41",
+              fontSize: "0.8rem",
+              marginLeft: "10px",
+              textDecoration: "none",
+            }}
+          >
+            (Log In)
+          </Button>
+        )}
+      </div>
     </Container>
   );
 };

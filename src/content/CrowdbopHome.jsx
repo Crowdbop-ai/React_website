@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Modal, Button, Form } from "react-bootstrap";
 
 const CrowdbopHome = () => {
   const [isAnimated, setIsAnimated] = useState(false);
   const navigate = useNavigate();
+
 
   // Trigger animations after component mount
   useEffect(() => {
@@ -15,6 +17,8 @@ const CrowdbopHome = () => {
     alert("This would navigate to voting in your actual app");
     // In your real code, use: navigate('/voting') or history.push('/voting')
   };
+
+
 
   return (
     <div

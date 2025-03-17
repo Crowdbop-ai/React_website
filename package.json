@@ -11,8 +11,9 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
+    "js-cookie": "^3.0.5",
     "react": "^19.0.0",
-    "react-bootstrap": "^2.10.2",
+    "react-bootstrap": "^2.10.9",
     "react-bootstrap-icons": "^1.11.5",
     "react-dom": "^19.0.0",
     "react-router": "^6.23.1",

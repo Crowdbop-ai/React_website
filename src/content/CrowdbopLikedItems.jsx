@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col, Button, Modal, Form} from "react-bootstrap";
 import { Trash } from "react-bootstrap-icons";
 
 const imgBaseURL = "https://m.media-amazon.com/images/G/01/Shopbop/p";
@@ -10,7 +10,8 @@ function CrowdbopLikedItems() {
     const [isLoading, setIsLoading] = useState(true);
 
     // Retrieve userId from sessionStorage (assumes user is logged in)
-    const userId = sessionStorage.getItem("userId");
+    const [showModal, setShowModal] = useState(false);
+    const [userId, setUserId] = useState(sessionStorage.getItem("userId") || ""); // Get userId 
 
     // Fetch liked items from the backend dynamically
     useEffect(() => {
@@ -37,13 +38,69 @@ function CrowdbopLikedItems() {
         setLikedItems(prevItems => prevItems.filter(item => item.productSIN !== productSIN));
     };
 
+    //userID submission
+    const handleSubmit = () => {
+        if (userId.trim()) {
+            sessionStorage.setItem("userId", userId); // Store userId in session storage
+            setShowModal(false); // Close the modal
+        } else {
+            alert("Please enter a valid user ID.");
+        }
+    };
     // If user is not logged in, show a message with a disabled login button
     if (!userId) {
         return (
             <Container className="text-center" style={{ marginTop: "5rem" }}>
                 <h2>You are not logged in.</h2>
                 <p>Please log in to view your liked items.</p>
-                <Button variant="primary" disabled>Go to Login</Button> {/* Disabled button */}
+                <Button variant="primary" onClick={() => setShowModal(true)}>
+                    Log In
+                </Button> {/* Disabled button */}
+
+                {/* Login Modal */}
+                <Modal
+                    show={showModal}
+                    onHide={() => setShowModal(false)}
+                    centered
+                    backdrop="static"
+                    keyboard={false}
+                >
+                    <Modal.Header closeButton={false}>
+                        <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+                            Enter Your User ID
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group controlId="userIdInput">
+                                <Form.Label>User ID</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Ex: bbadger"
+                                    value={userId}
+                                    onChange={(e) => setUserId(e.target.value)}
+                                    style={{ fontFamily: "Arial, sans-serif" }}
+                                />
+                                <Form.Text className="text-muted">
+                                    This ID will be used to track your votes and liked items.
+                                </Form.Text>
+                            </Form.Group>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button
+                            variant="primary"
+                            onClick={handleSubmit}
+                            style={{
+                                backgroundColor: "#E85C41",
+                                border: "none",
+                                fontFamily: "'Archivo Black', sans-serif",
+                            }}
+                        >
+                            Submit
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </Container>
         );
     }
