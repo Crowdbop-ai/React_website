@@ -9,8 +9,8 @@ function CrowdbopLikedItems() {
     const [likedItems, setLikedItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Retrieve userId from localStorage (assumes user is logged in)
-    const userId = localStorage.getItem("userId");
+    // Retrieve userId from sessionStorage (assumes user is logged in)
+    const userId = sessionStorage.getItem("userId");
 
     // Fetch liked items from the backend dynamically
     useEffect(() => {
