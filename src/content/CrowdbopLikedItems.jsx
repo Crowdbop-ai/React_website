@@ -1,0 +1,105 @@
+import React, { useEffect, useState } from "react";
+import { Container, Row, Col, Button } from "react-bootstrap";
+import { Trash } from "react-bootstrap-icons";
+
+const imgBaseURL = "https://m.media-amazon.com/images/G/01/Shopbop/p";
+const itemBaseURL = "https://www.shopbop.com/";
+
+function CrowdbopLikedItems() {
+    const [likedItems, setLikedItems] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Retrieve userId from sessionStorage (assumes user is logged in)
+    const userId = sessionStorage.getItem("userId");
+
+    // Fetch liked items from the backend dynamically
+    useEffect(() => {
+        if (!userId) {
+            setIsLoading(false);
+            return;
+        }
+
+        fetch(`https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/liked-items?userId=${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                console.log("API Response:", data);
+                setLikedItems(data.likedItems || []); // Store fetched liked items
+                setIsLoading(false);
+            })
+            .catch(error => {
+                console.error("Error fetching liked items:", error);
+                setIsLoading(false);
+            });
+    }, [userId]);
+
+    // Function to delete an item locally (no API call since backend delete isn't working)
+    const handleDelete = (productSIN) => {
+        setLikedItems(prevItems => prevItems.filter(item => item.productSIN !== productSIN));
+    };
+
+    // If user is not logged in, show a message with a disabled login button
+    if (!userId) {
+        return (
+            <Container className="text-center" style={{ marginTop: "5rem" }}>
+                <h2>You are not logged in.</h2>
+                <p>Please log in to view your liked items.</p>
+                <Button variant="primary" disabled>Go to Login</Button> {/* Disabled button */}
+            </Container>
+        );
+    }
+
+    // Show loading message while fetching data
+    if (isLoading) {
+        return <h2 className="text-center" style={{ marginTop: "2rem" }}>Loading your liked items...</h2>;
+    }
+
+    return (
+        <Container fluid style={{ marginTop: "2rem", maxWidth: "800px" }}>
+            <h1 className="text-center mb-4">Your Liked Items</h1>
+            
+            {/* If no liked items exist, show message */}
+            {likedItems.length === 0 ? (
+                <h3 className="text-center mt-4">You haven't liked any items yet.</h3>
+            ) : (
+                <>
+                    {/* Loop through liked items, displaying each as a row */}
+                    {likedItems.map((item, index) => (
+                        <React.Fragment key={index}>
+                            <Row className="align-items-center" style={{ marginBottom: "1.5rem" }}>
+                                {/* Product Image & Link */}
+                                <Col xs={4}>
+                                    <a href={itemBaseURL + item.ProductDetailURL} className="d-flex align-items-center">
+                                        <img 
+                                            src={imgBaseURL + item.PrimaryImageURL} 
+                                            alt={item.ProductName} 
+                                            style={{ width: "150px", borderRadius: "5px" }} 
+                                        />
+                                    </a>
+                                </Col>
+                                
+                                {/* Product Details */}
+                                <Col xs={6}>
+                                    <p style={{ margin: "0", fontSize: "18px" }}>
+                                        <strong>{item.ProductName}</strong> by {item.DesignerName} <br />
+                                        Price: <strong>${item.Price}</strong>
+                                    </p>
+                                </Col>
+                                
+                                {/* Delete Button */}
+                                <Col xs={2} className="text-center">
+                                    <Button variant="danger" onClick={() => handleDelete(item.productSIN)}>
+                                        <Trash size={24} />
+                                    </Button>
+                                </Col>
+                            </Row>
+                            {/* Add horizontal line between items */}
+                            {index !== likedItems.length - 1 && <hr />}
+                        </React.Fragment>
+                    ))}
+                </>
+            )}
+        </Container>
+    );
+}
+
+export default CrowdbopLikedItems;

@@ -4,6 +4,7 @@ import CrowdbopLayout from "./CrowdbopLayout";
 import CrowdbopHome from "../content/CrowdbopHome";
 import CrowdbopRankings from "../content/CrowdbopRankings";
 import CrowdbopVoting from "../content/CrowdbopVoting";
+import CrowdbopLikedItems from "../content/CrowdbopLikedItems";
 
 function CrowdbopApp() {
   return (
@@ -14,6 +15,7 @@ function CrowdbopApp() {
           <Route index element={<CrowdbopHome />} />
           <Route path="/rankings" element={<CrowdbopRankings />}></Route>
           <Route path="/voting" element={<CrowdbopVoting />}></Route>
+          <Route path="/liked" element={<CrowdbopLikedItems />}></Route>
           {/* TODO: Add a route for each page */}
           {/* TODO: Add a route to match with * for all other paths */}
           {/* <Route path="*" element={?} /> */}
