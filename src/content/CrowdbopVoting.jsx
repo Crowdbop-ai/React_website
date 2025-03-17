@@ -1,19 +1,60 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button, Container, Row, Col } from "react-bootstrap";
+import { Button, Container, Row, Col, Form, Dropdown } from "react-bootstrap";
 import placeholderImage from "../assets/loading.JPG"; // Import the placeholder image
 
 const CrowdbopVoting = () => {
   const [currentProducts, setCurrentProducts] = useState([]); // Current pair of products to display
   const [nextProducts, setNextProducts] = useState([]); // Pre-fetched next pair of products
   const [isLoading, setIsLoading] = useState(true); // Track loading state (only for initial load)
+  const [categories, setCategories] = useState([]); // List of available categories
+  const [selectedCategory, setSelectedCategory] = useState("shoes"); // Default category
+  const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
 
-  // Fetch the first pair of products on page load
+  // Fetch available categories on page load
   useEffect(() => {
-    const fetchInitialProducts = async () => {
+    const fetchCategories = async () => {
       try {
         const response = await fetch(
-          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=shoes"
+          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/categories"
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data.categories);
+        } else {
+          console.error("Failed to fetch categories");
+          // Fallback to hardcoded categories if API fails
+          setCategories([
+            { id: "shoes", name: "Shoes" },
+            { id: "accessories", name: "Accessories" },
+            { id: "clothing", name: "Dresses" },
+            { id: "bags", name: "Bags" },
+            { id: "jewelry", name: "Jewelry" },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        // Fallback to hardcoded categories if API fails
+        setCategories([
+          { id: "shoes", name: "Shoes" },
+          { id: "accessories", name: "Accessories" },
+          { id: "clothing", name: "Dresses" },
+          { id: "bags", name: "Bags" },
+          { id: "jewelry", name: "Jewelry" },
+        ]);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Fetch the first pair of products on page load and when category changes
+  useEffect(() => {
+    const fetchInitialProducts = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=${selectedCategory}`
         );
         const data = await response.json();
         setCurrentProducts(data.products);
@@ -31,13 +72,13 @@ const CrowdbopVoting = () => {
     };
 
     fetchInitialProducts();
-  }, []);
+  }, [selectedCategory]); // Re-fetch when selected category changes
 
   // Function to fetch the next pair of products
   const fetchNextPair = async () => {
     try {
       const response = await fetch(
-        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=shoes"
+        `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=${selectedCategory}`
       );
       const data = await response.json();
       setNextProducts(data.products);
@@ -70,7 +111,7 @@ const CrowdbopVoting = () => {
             body: JSON.stringify({
               winnerSIN: winner.ProductSIN,
               loserSIN: loser.ProductSIN,
-              categoryId: "shoes", // Hardcoded category for now
+              categoryId: selectedCategory, // Now using the selected category
             }),
           }
         );
@@ -95,11 +136,94 @@ const CrowdbopVoting = () => {
     fetchNextPair();
   };
 
+  // Format category ID for display (remove underscores, capitalize first letter)
+  const formatCategoryName = (categoryId) => {
+    if (!categoryId) return "";
+    return categoryId
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  // Handle category selection
+  const handleCategorySelect = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setShowCategories(false); // Close dropdown after selection
+  };
+
   return (
     <Container className="py-5">
-      <h1 className="text-center mb-5" style={{ fontWeight: "bold" }}>
+      <h1 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         WHICH PRODUCT DO YOU PREFER?
       </h1>
+
+      {/* Category dropdown */}
+      <div className="d-flex justify-content-center mb-4">
+        <div
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            padding: "5px 10px",
+            background: "#EE4A1B",
+            position: "relative",
+            zIndex: 1000,
+            cursor: "pointer",
+            color: "black",
+            fontWeight: "bold",
+            minWidth: "200px",
+            textAlign: "center",
+          }}
+          onClick={() => setShowCategories(!showCategories)}
+        >
+          Category: {formatCategoryName(selectedCategory)} ▼
+          {showCategories && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                background: "white",
+                border: "1px solid #ddd",
+                borderRadius: "0 0 5px 5px",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                maxHeight: "300px",
+                overflowY: "auto",
+              }}
+            >
+              {categories.map((category) => (
+                <div
+                  key={category.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCategorySelect(category.id);
+                  }}
+                  style={{
+                    padding: "8px 12px",
+                    cursor: "pointer",
+                    backgroundColor:
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent",
+                    color: "black",
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#f0f0f0")
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent")
+                  }
+                >
+                  {category.name || formatCategoryName(category.id)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       <Row className="justify-content-center">
         {isLoading ? (
@@ -111,7 +235,11 @@ const CrowdbopVoting = () => {
                   src={placeholderImage}
                   alt="Loading..."
                   className="img-fluid mb-3"
-                  style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                  style={{
+                    maxHeight: "400px",
+                    width: "100%",
+                    objectFit: "contain",
+                  }}
                 />
                 <h3 className="mt-2 font-weight-bold">Loading...</h3>
                 <p>Loading...</p>
@@ -124,7 +252,11 @@ const CrowdbopVoting = () => {
                   src={placeholderImage}
                   alt="Loading..."
                   className="img-fluid mb-3"
-                  style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                  style={{
+                    maxHeight: "400px",
+                    width: "100%",
+                    objectFit: "contain",
+                  }}
                 />
                 <h3 className="mt-2 font-weight-bold">Loading...</h3>
                 <p>Loading...</p>
@@ -144,7 +276,11 @@ const CrowdbopVoting = () => {
                     src={imageUrl}
                     alt={product.ProductName}
                     className="img-fluid mb-3"
-                    style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                    style={{
+                      maxHeight: "400px",
+                      width: "100%",
+                      objectFit: "contain",
+                    }}
                   />
                   <h3
                     className="mt-2 font-weight-bold"
@@ -157,7 +293,9 @@ const CrowdbopVoting = () => {
                     {product.ProductName}
                   </h3>
                   <p>{product.DesignerName}</p>
-                  <p><b>${product.Price.toFixed(2)}</b></p>
+                  <p>
+                    <b>${product.Price.toFixed(2)}</b>
+                  </p>
 
                   <Button
                     variant="warning"
@@ -196,8 +334,6 @@ const CrowdbopVoting = () => {
           </Button>
         </Link>
       </div>
-
-      {/* TODO: Make category selection dynamic in the future */}
     </Container>
   );
 };

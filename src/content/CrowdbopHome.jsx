@@ -62,8 +62,8 @@ const CrowdbopHome = () => {
         </p>
 
         {/* Custom Button */}
-         {/* Buttons Container (Stacked Vertically) */}
-         <div
+        {/* Buttons Container (Stacked Vertically) */}
+        <div
           style={{
             display: "flex",
             flexDirection: "column",
@@ -127,7 +127,7 @@ const CrowdbopHome = () => {
             </svg>
           </button>
           <button
-            onClick={() => navigate("/liked")}
+            onClick={() => navigate("/rankings")}
             className="voting-button"
             style={{
               position: "relative",
