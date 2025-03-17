@@ -183,6 +183,74 @@ const CrowdbopVoting = () => {
         WHICH PRODUCT DO YOU PREFER?
       </h1>
 
+      {/* Category dropdown */}
+      <div className="d-flex justify-content-center mb-4">
+        <div
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            padding: "5px 10px",
+            background: "#EE4A1B",
+            position: "relative",
+            zIndex: 1000,
+            cursor: "pointer",
+            color: "black",
+            fontWeight: "bold",
+            minWidth: "200px",
+            textAlign: "center",
+          }}
+          onClick={() => setShowCategories(!showCategories)}
+        >
+          Category: {formatCategoryName(selectedCategory)} ▼
+          {showCategories && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                background: "white",
+                border: "1px solid #ddd",
+                borderRadius: "0 0 5px 5px",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                maxHeight: "300px",
+                overflowY: "auto",
+              }}
+            >
+              {categories.map((category) => (
+                <div
+                  key={category.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCategorySelect(category.id);
+                  }}
+                  style={{
+                    padding: "8px 12px",
+                    cursor: "pointer",
+                    backgroundColor:
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent",
+                    color: "black",
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#f0f0f0")
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent")
+                  }
+                >
+                  {category.name || formatCategoryName(category.id)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* User ID Modal */}
       <Modal
         show={showModal}

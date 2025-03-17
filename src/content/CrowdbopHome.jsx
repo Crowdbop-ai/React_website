@@ -131,7 +131,7 @@ const CrowdbopHome = () => {
             </svg>
           </button>
           <button
-            onClick={() => navigate("/rankings")}
+            onClick={() => navigate("/liked")}
             className="voting-button"
             style={{
               position: "relative",

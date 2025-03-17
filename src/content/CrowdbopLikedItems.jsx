@@ -48,6 +48,7 @@ function CrowdbopLikedItems() {
         }
     };
     // If user is not logged in, show a message with a disabled login button
+    console.log(userId);
     if (!userId) {
         return (
             <Container className="text-center" style={{ marginTop: "5rem" }}>
