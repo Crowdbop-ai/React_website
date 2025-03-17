@@ -6,7 +6,6 @@ const CrowdbopHome = () => {
   const [isAnimated, setIsAnimated] = useState(false);
   const navigate = useNavigate();
 
-
   // Trigger animations after component mount
   useEffect(() => {
     setTimeout(() => setIsAnimated(true), 100);
@@ -17,8 +16,6 @@ const CrowdbopHome = () => {
     alert("This would navigate to voting in your actual app");
     // In your real code, use: navigate('/voting') or history.push('/voting')
   };
-
-
 
   return (
     <div
@@ -166,6 +163,60 @@ const CrowdbopHome = () => {
             }}
           >
             View Liked Items
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                marginLeft: "10px",
+                animation: "arrowBounce 1s infinite",
+              }}
+            >
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+          <button
+            onClick={() => navigate("/rankings")}
+            className="voting-button"
+            style={{
+              position: "relative",
+              backgroundColor: "#fff",
+              color: "#E85C41",
+              border: "2px solid #E85C41",
+              borderRadius: "50px",
+              padding: "15px 40px",
+              fontSize: "1.3rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "#E85C41";
+              e.currentTarget.style.color = "#fff";
+              e.currentTarget.style.transform = "translateY(-3px)";
+              e.currentTarget.style.boxShadow =
+                "0 6px 20px rgba(232, 92, 65, 0.4)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "#fff";
+              e.currentTarget.style.color = "#E85C41";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow =
+                "0 4px 14px rgba(232, 92, 65, 0.2)";
+            }}
+          >
+            Skip to Leaderboard
             <svg
               width="24"
               height="24"
