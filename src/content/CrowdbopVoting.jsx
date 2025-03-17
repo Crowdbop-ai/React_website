@@ -265,7 +265,12 @@ const CrowdbopVoting = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
             <Form.Group controlId="userIdInput">
               <Form.Label>User ID</Form.Label>
               <Form.Control

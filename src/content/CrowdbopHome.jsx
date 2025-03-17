@@ -5,6 +5,7 @@ import { Modal, Button, Form } from "react-bootstrap";
 const CrowdbopHome = () => {
   const [isAnimated, setIsAnimated] = useState(false);
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false); // Control modal visibility
 
   // Trigger animations after component mount
   useEffect(() => {
@@ -17,6 +18,16 @@ const CrowdbopHome = () => {
     // In your real code, use: navigate('/voting') or history.push('/voting')
   };
 
+  // Handle modal submission
+  const handleSubmit = () => {
+    if (userId.trim()) {
+      sessionStorage.setItem("userId", userId); // Store userId in session storage
+      setShowModal(false); // Close the modal
+    } else {
+      alert("Please enter a valid user ID.");
+    }
+  };
+
   return (
     <div
       className="crowdbop-container"
@@ -27,6 +38,56 @@ const CrowdbopHome = () => {
         fontFamily: "'Archivo Black', sans-serif",
       }}
     >
+      {/* User ID Modal */}
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton={false}>
+          <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+            Enter Your User ID
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
+            <Form.Group controlId="userIdInput">
+              <Form.Label>User ID</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Ex: bbadger"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                style={{ fontFamily: "Arial, sans-serif" }}
+              />
+              <Form.Text className="text-muted">
+                This ID will be used to track your votes.
+              </Form.Text>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            style={{
+              backgroundColor: "#E85C41",
+              border: "none",
+              fontFamily: "'Archivo Black', sans-serif",
+            }}
+          >
+            Submit
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       {/* Header Section */}
       <div
         className="header-section"
@@ -73,6 +134,60 @@ const CrowdbopHome = () => {
             marginTop: "30px",
           }}
         >
+          <button
+            onClick={() => setShowModal(true)}
+            className="login-button"
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "20px",
+              backgroundColor: "#fff",
+              color: "#E85C41",
+              border: "2px solid #E85C41",
+              borderRadius: "50px",
+              padding: "8px 20px",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "#E85C41";
+              e.currentTarget.style.color = "#fff";
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow =
+                "0 6px 20px rgba(232, 92, 65, 0.4)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "#fff";
+              e.currentTarget.style.color = "#E85C41";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow =
+                "0 4px 14px rgba(232, 92, 65, 0.2)";
+            }}
+          >
+            Log In
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ marginLeft: "8px" }}
+            >
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+          </button>
           <button
             onClick={() => navigate("/voting")}
             className="voting-button"
