@@ -9,13 +9,54 @@ const CrowdbopVoting = () => {
   const [isLoading, setIsLoading] = useState(true); // Track loading state (only for initial load)
   const [showModal, setShowModal] = useState(false); // Control modal visibility
   const [userId, setUserId] = useState(sessionStorage.getItem("userId") || ""); // Get userId from session storage if it exists
+  const [categories, setCategories] = useState([]); // List of available categories
+  const [selectedCategory, setSelectedCategory] = useState("shoes"); // Default category
+  const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
 
-  // Fetch the first pair of products on page load
+  // Fetch available categories on page load
   useEffect(() => {
-    const fetchInitialProducts = async () => {
+    const fetchCategories = async () => {
       try {
         const response = await fetch(
-          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=shoes"
+          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/categories"
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data.categories);
+        } else {
+          console.error("Failed to fetch categories");
+          // Fallback to hardcoded categories if API fails
+          setCategories([
+            { id: "shoes", name: "Shoes" },
+            { id: "accessories", name: "Accessories" },
+            { id: "clothing", name: "Dresses" },
+            { id: "bags", name: "Bags" },
+            { id: "jewelry", name: "Jewelry" },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        // Fallback to hardcoded categories if API fails
+        setCategories([
+          { id: "shoes", name: "Shoes" },
+          { id: "accessories", name: "Accessories" },
+          { id: "clothing", name: "Dresses" },
+          { id: "bags", name: "Bags" },
+          { id: "jewelry", name: "Jewelry" },
+        ]);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Fetch the first pair of products on page load and when category changes
+  useEffect(() => {
+    const fetchInitialProducts = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=${selectedCategory}`
         );
         const data = await response.json();
         setCurrentProducts(data.products);
@@ -33,13 +74,13 @@ const CrowdbopVoting = () => {
     };
 
     fetchInitialProducts();
-  }, []);
+  }, [selectedCategory]); // Re-fetch when selected category changes
 
   // Function to fetch the next pair of products
   const fetchNextPair = async () => {
     try {
       const response = await fetch(
-        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=shoes"
+        `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=${selectedCategory}`
       );
       const data = await response.json();
       setNextProducts(data.products);
@@ -89,7 +130,7 @@ const CrowdbopVoting = () => {
             body: JSON.stringify({
               winnerSIN: winner.ProductSIN,
               loserSIN: loser.ProductSIN,
-              categoryId: "shoes", // Hardcoded category for now
+              categoryId: selectedCategory, // Now using the selected category
               userId: userId, // Include the user ID in the vote submission
             }),
           }
@@ -121,9 +162,24 @@ const CrowdbopVoting = () => {
     setUserId(""); // Clear userId from state
   };
 
+  // Format category ID for display (remove underscores, capitalize first letter)
+  const formatCategoryName = (categoryId) => {
+    if (!categoryId) return "";
+    return categoryId
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  // Handle category selection
+  const handleCategorySelect = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setShowCategories(false); // Close dropdown after selection
+  };
+
   return (
     <Container className="py-5">
-      <h1 className="text-center mb-5" style={{ fontWeight: "bold" }}>
+      <h1 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         WHICH PRODUCT DO YOU PREFER?
       </h1>
 
@@ -183,7 +239,11 @@ const CrowdbopVoting = () => {
                   src={placeholderImage}
                   alt="Loading..."
                   className="img-fluid mb-3"
-                  style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                  style={{
+                    maxHeight: "400px",
+                    width: "100%",
+                    objectFit: "contain",
+                  }}
                 />
                 <h3 className="mt-2 font-weight-bold">Loading...</h3>
                 <p>Loading...</p>
@@ -196,7 +256,11 @@ const CrowdbopVoting = () => {
                   src={placeholderImage}
                   alt="Loading..."
                   className="img-fluid mb-3"
-                  style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                  style={{
+                    maxHeight: "400px",
+                    width: "100%",
+                    objectFit: "contain",
+                  }}
                 />
                 <h3 className="mt-2 font-weight-bold">Loading...</h3>
                 <p>Loading...</p>
@@ -216,7 +280,11 @@ const CrowdbopVoting = () => {
                     src={imageUrl}
                     alt={product.ProductName}
                     className="img-fluid mb-3"
-                    style={{ maxHeight: "400px", width: "100%", objectFit: "contain" }}
+                    style={{
+                      maxHeight: "400px",
+                      width: "100%",
+                      objectFit: "contain",
+                    }}
                   />
                   <h3
                     className="mt-2 font-weight-bold"
@@ -229,7 +297,9 @@ const CrowdbopVoting = () => {
                     {product.ProductName}
                   </h3>
                   <p>{product.DesignerName}</p>
-                  <p><b>${product.Price.toFixed(2)}</b></p>
+                  <p>
+                    <b>${product.Price.toFixed(2)}</b>
+                  </p>
 
                   <Button
                     variant="warning"
