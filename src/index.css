@@ -50,6 +50,10 @@ a:hover {
   cursor: pointer;
 }
 
+Link:hover {
+  cursor: pointer;
+}
+
 /* Additional styling for the how-it-works grid items */
 .flex {
   display: flex;
