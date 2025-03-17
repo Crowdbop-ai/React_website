@@ -18,16 +18,6 @@ const CrowdbopHome = () => {
     // In your real code, use: navigate('/voting') or history.push('/voting')
   };
 
-  // Handle modal submission
-  const handleSubmit = () => {
-    if (userId.trim()) {
-      sessionStorage.setItem("userId", userId); // Store userId in session storage
-      setShowModal(false); // Close the modal
-    } else {
-      alert("Please enter a valid user ID.");
-    }
-  };
-
   return (
     <div
       className="crowdbop-container"
@@ -38,56 +28,6 @@ const CrowdbopHome = () => {
         fontFamily: "'Archivo Black', sans-serif",
       }}
     >
-      {/* User ID Modal */}
-      <Modal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        centered
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton={false}>
-          <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
-            Enter Your User ID
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-          >
-            <Form.Group controlId="userIdInput">
-              <Form.Label>User ID</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Ex: bbadger"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                style={{ fontFamily: "Arial, sans-serif" }}
-              />
-              <Form.Text className="text-muted">
-                This ID will be used to track your votes.
-              </Form.Text>
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            style={{
-              backgroundColor: "#E85C41",
-              border: "none",
-              fontFamily: "'Archivo Black', sans-serif",
-            }}
-          >
-            Submit
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
       {/* Header Section */}
       <div
         className="header-section"
@@ -134,7 +74,7 @@ const CrowdbopHome = () => {
             marginTop: "30px",
           }}
         >
-          <button
+          {/* <button
             onClick={() => setShowModal(true)}
             className="login-button"
             style={{
@@ -187,7 +127,7 @@ const CrowdbopHome = () => {
               <polyline points="10 17 15 12 10 7"></polyline>
               <line x1="15" y1="12" x2="3" y2="12"></line>
             </svg>
-          </button>
+          </button> */}
           <button
             onClick={() => navigate("/voting")}
             className="voting-button"
@@ -242,7 +182,8 @@ const CrowdbopHome = () => {
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </button>
-          <button
+
+          {/* <button
             onClick={() => navigate("/liked")}
             className="voting-button"
             style={{
@@ -295,7 +236,7 @@ const CrowdbopHome = () => {
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
-          </button>
+          </button> */}
           <button
             onClick={() => navigate("/rankings")}
             className="voting-button"
