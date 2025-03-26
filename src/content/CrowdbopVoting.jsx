@@ -156,11 +156,6 @@ const CrowdbopVoting = () => {
     fetchNextPair();
   };
 
-  // Handle logout
-  const handleLogout = () => {
-    sessionStorage.removeItem("userId"); // Remove userId from session storage
-    setUserId(""); // Clear userId from state
-  };
 
   // Format category ID for display (remove underscores, capitalize first letter)
   const formatCategoryName = (categoryId) => {
@@ -182,6 +177,11 @@ const CrowdbopVoting = () => {
       <h1 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         WHICH PRODUCT DO YOU PREFER?
       </h1>
+
+      {/* display userID */}
+      <div className="text-center mt-3">
+          <p><b>User ID: {userId}</b></p>
+      </div>
 
       {/* Category dropdown */}
       <div className="d-flex justify-content-center mb-4">
@@ -250,51 +250,6 @@ const CrowdbopVoting = () => {
           )}
         </div>
       </div>
-
-      {/* User ID Modal */}
-      <Modal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        centered
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton={false}>
-          <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
-            Enter Your User ID
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group controlId="userIdInput">
-              <Form.Label>User ID</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Ex: bbadger"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                style={{ fontFamily: "Arial, sans-serif" }}
-              />
-              <Form.Text className="text-muted">
-                This ID will be used to track your votes.
-              </Form.Text>
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            style={{
-              backgroundColor: "#E85C41",
-              border: "none",
-              fontFamily: "'Archivo Black', sans-serif",
-            }}
-          >
-            Submit
-          </Button>
-        </Modal.Footer>
-      </Modal>
 
       {/* Product Display */}
       <Row className="justify-content-center">
@@ -407,42 +362,6 @@ const CrowdbopVoting = () => {
             Skip to Rankings
           </Button>
         </Link>
-      </div>
-
-      {/* Login/Logout Section */}
-      <div className="text-center mt-3">
-        {userId ? (
-          // If logged in, show User ID and Logout button
-          <>
-            <small>User ID: {userId}</small>
-            <Button
-              variant="link"
-              onClick={handleLogout}
-              style={{
-                color: "#E85C41",
-                fontSize: "0.8rem",
-                marginLeft: "10px",
-                textDecoration: "none",
-              }}
-            >
-              (Logout)
-            </Button>
-          </>
-        ) : (
-          // If not logged in, show Login button
-          <Button
-            variant="link"
-            onClick={() => setShowModal(true)}
-            style={{
-              color: "#E85C41",
-              fontSize: "0.8rem",
-              marginLeft: "10px",
-              textDecoration: "none",
-            }}
-          >
-            (Log In)
-          </Button>
-        )}
       </div>
     </Container>
   );
