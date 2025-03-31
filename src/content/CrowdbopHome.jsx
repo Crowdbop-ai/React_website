@@ -611,6 +611,76 @@ const CrowdbopHome = () => {
               Find new favorites you might have missed
             </p>
           </div>
+
+          {/* Step 5 */}
+          <div
+            className="step-card"
+            style={{
+              padding: "20px",
+              backgroundColor: "#fafafa",
+              borderRadius: "8px",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              cursor: "default",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "translateY(-5px)";
+              e.currentTarget.style.boxShadow = "0 8px 15px rgba(0,0,0,0.1)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "15px",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#E85C41",
+                  color: "#fff",
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: "12px",
+                  fontWeight: "bold",
+                  fontSize: "18px",
+                }}
+              >
+                5
+              </div>
+              <h3
+                style={{
+                  margin: "0",
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  color: "#333",
+                }}
+              >
+                ELO Ranking System
+              </h3>
+            </div>
+            <p
+              style={{
+                margin: "0",
+                color: "#666",
+                fontFamily: "Arial, sans-serif",
+                fontSize: "0.95rem",
+                lineHeight: "1.5",
+              }}
+            >
+              Our leaderboard uses the ELO system from chess - items gain or
+              lose points based on their rank and who they beat, creating a
+              dynamic ranking that evolves with each vote.
+            </p>
+          </div>
         </div>
       </div>
 
