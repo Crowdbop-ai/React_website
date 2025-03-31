@@ -9,19 +9,55 @@ const CrowdbopHome = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem("userId") || ""); // Get userId from session storage if it exists
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [designers, setDesigners] = useState([]); // designerNames
+  
 
   // Trigger animations after component mount
   useEffect(() => {
+    const fetchDesigners = async () => {
+      try {
+        // Correct path - assumes JSON is in public/assets
+        const response = await fetch('src/assets/top_designers.json');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data) {
+          throw new Error('No data received');
+        }
+        
+        // // Extract just the values (designer names) from the object
+        const designerNames = Object.values(data);
+        setDesigners(designerNames);
+      } catch (err) {
+        console.error("Failed to fetch designers:", err);
+        setError("Failed to load designer data. Please refresh the page.");
+      }
+    };
+
+    fetchDesigners();
+
     if (!userId) {
-      setShowModal(true); // Only show modal if userId is missing
+      setShowModal(true);
     }
     setTimeout(() => setIsAnimated(true), 100);
   }, []);
 
+  // if (isLoading) {
+  //   return <div>Loading designers...</div>;
+  // }
+
+  // if (error) {
+  //   return <div>Error: {error}</div>;
+  // }  
+
   const [isNewUser, setIsNewUser] = useState(false);
   const [userDetails, setUserDetails] = useState({
     gender: '',
-    preferredStyle: '',
+    preferredDesigner: [],
     age: ''
   });
   
@@ -29,7 +65,7 @@ const CrowdbopHome = () => {
     setIsNewUser(!isNewUser);
     setUserDetails({
       gender: '',
-      preferredStyle: '',
+      preferredDesigner: '',
       age: ''
     });
   };
@@ -43,16 +79,44 @@ const CrowdbopHome = () => {
   
   const isSignupValid = userId.trim() && 
                         userDetails.gender && 
-                        userDetails.preferredStyle && 
+                        userDetails.preferredDesigner && 
                         userDetails.age;
 
-  const handleLogin = () => {
-    if (userId.trim()) {
-      sessionStorage.setItem("userId", userId);
-      setShowModal(false);
-      setError(null);
-    } else {
+
+  const handleLogin = async () => {
+    if (!userId.trim()) {
       setError("Please enter a valid user ID.");
+      return;
+    }
+  
+    setIsLoading(true);
+    setError(null);
+  
+    try {
+      const response = await fetch('https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+  
+      if (response.ok) {
+        // Successful login (200)
+        sessionStorage.setItem("userId", userId);
+        setShowModal(false);
+      } else if (response.status === 401) {
+        // User not found
+        setError("User not found. Please sign up first.");
+      } else {
+        // Other error
+        setError("An error occurred. Please try again.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Failed to connect to the server. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -88,6 +152,7 @@ const CrowdbopHome = () => {
     } catch (err) {
       setError("Failed to sign up. Please try again.");
     } finally {
+      console.log(userDetails);
       setIsLoading(false);
     }
   };
@@ -97,6 +162,24 @@ const CrowdbopHome = () => {
     sessionStorage.removeItem("userId"); // Remove userId from session storage
     setUserId(""); // Clear userId from state
     setShowModal(true);
+  };
+
+  //designer selection
+  const toggleDesignerSelection = (designer) => {
+    setUserDetails(prev => {
+      const currentDesigners = prev.preferredDesigner;
+      if (currentDesigners.includes(designer)) {
+        return {
+          ...prev,
+          preferredDesigner: currentDesigners.filter(d => d !== designer)
+        };
+      } else {
+        return {
+          ...prev,
+          preferredDesigner: [...currentDesigners, designer]
+        };
+      }
+    });
   };
 
   return (
@@ -199,18 +282,6 @@ const CrowdbopHome = () => {
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label>What is your preferred style?</Form.Label>
-                    <Form.Select
-                      value={userDetails.preferredStyle}
-                      onChange={(e) => handleUserDetailChange('preferredStyle', e.target.value)}
-                    >
-                      <option value="">Select style</option>
-                      <option value="styleA">Style A</option>
-                      <option value="styleB">Style B</option>
-                    </Form.Select>
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
                     <Form.Label>What is your age?</Form.Label>
                     <Form.Control
                       type="number"
@@ -220,6 +291,41 @@ const CrowdbopHome = () => {
                       onChange={(e) => handleUserDetailChange('age', e.target.value)}
                       placeholder="Enter your age"
                     />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>What is your preferred designer? (Select all that apply)</Form.Label>
+                    <div className="d-flex flex-wrap" style={{ gap: '10px' }}>
+                      {designers.map((designer) => (
+                        <Button
+                          key={designer}
+                          variant={userDetails.preferredDesigner.includes(designer) ? 'secondary' : 'outline-secondary'}
+                          onClick={() => toggleDesignerSelection(designer)}
+                          style={{
+                            borderRadius: '50px',
+                            padding: '8px 12px',
+                            minHeight: '40px', 
+                            flex: '1 0 auto', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <span style={{
+                            display: 'inline-block',
+                            maxWidth: '100%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {designer}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
                   </Form.Group>
                 </>
               )}
