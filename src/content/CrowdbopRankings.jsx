@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Col, Container, Row, Button, Pagination } from "react-bootstrap";
+import { FaHeart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const imgBaseURL = "https://m.media-amazon.com/images/G/01/Shopbop/p";
@@ -9,10 +10,10 @@ function CrowdbopRankings() {
   const [rankingsData, setRankingsData] = useState([]);
   const [page, setPage] = useState(1);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("shoes"); // Default category
-  const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
+  const [selectedCategory, setSelectedCategory] = useState("shoes");
+  const [showCategories, setShowCategories] = useState(false);
+  const [sortBy, setSortBy] = useState("eloRating");
 
-  // Format category ID for display (remove underscores, capitalize first letter)
   const formatCategoryName = (categoryId) => {
     if (!categoryId) return "";
     return categoryId
@@ -21,14 +22,12 @@ function CrowdbopRankings() {
       .join(" ");
   };
 
-  // Handle category selection
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
-    setShowCategories(false); // Close dropdown after selection
-    setPage(1); // Reset to first page when changing category
+    setShowCategories(false);
+    setPage(1);
   };
 
-  // Fetch available categories on page load
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -39,8 +38,6 @@ function CrowdbopRankings() {
           const data = await response.json();
           setCategories(data.categories);
         } else {
-          console.error("Failed to fetch categories");
-          // Fallback to hardcoded categories if API fails
           setCategories([
             { id: "shoes", name: "Shoes" },
             { id: "accessories", name: "Accessories" },
@@ -50,8 +47,6 @@ function CrowdbopRankings() {
           ]);
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
-        // Fallback to hardcoded categories if API fails
         setCategories([
           { id: "shoes", name: "Shoes" },
           { id: "accessories", name: "Accessories" },
@@ -65,14 +60,11 @@ function CrowdbopRankings() {
     fetchCategories();
   }, []);
 
-  // Fetch rankings data when page or category changes
   useEffect(() => {
     const fetchRankings = async () => {
       try {
         const response = await fetch(
-          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/leaderboard?category=${selectedCategory}&limit=10&offset=${
-            (page - 1) * 10
-          }`
+          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/leaderboard?category=${selectedCategory}&limit=10&offset=${(page - 1) * 10}&sortBy=${sortBy}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -86,14 +78,36 @@ function CrowdbopRankings() {
     };
 
     fetchRankings();
-  }, [page, selectedCategory]);
+  }, [page, selectedCategory, sortBy]);
 
-  const handleNext = () => {
-    setPage((p) => p + 1);
-  };
+  const handleNext = () => setPage((p) => p + 1);
+  const handlePrev = () => setPage((p) => p - 1);
 
-  const handlePrev = () => {
-    setPage((p) => p - 1);
+  const [userId, setUserId] = useState(sessionStorage.getItem("userId") || "");
+
+  const handleLike = async (product) => {
+    if (!userId) {
+      alert("Please log in to like products.");
+      return;
+    }
+
+    try {
+      
+      const response = await fetch("https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          productSIN: product.ProductSIN,
+          categoryId: selectedCategory
+        })
+      });
+
+      if (!response.ok) throw new Error("Failed to like product");
+      console.log("Product liked successfully");
+    } catch (error) {
+      console.error("Error liking product:", error);
+    }
   };
 
   return (
@@ -105,7 +119,6 @@ function CrowdbopRankings() {
       </h1>
       <h1>TOP RANKED PRODUCTS</h1>
 
-      {/* Category dropdown */}
       <div className="d-flex justify-content-center my-4">
         <div
           style={{
@@ -150,9 +163,7 @@ function CrowdbopRankings() {
                     padding: "8px 12px",
                     cursor: "pointer",
                     backgroundColor:
-                      selectedCategory === category.id
-                        ? "#f5f5f5"
-                        : "transparent",
+                      selectedCategory === category.id ? "#f5f5f5" : "transparent",
                     color: "black",
                   }}
                   onMouseOver={(e) =>
@@ -160,9 +171,7 @@ function CrowdbopRankings() {
                   }
                   onMouseOut={(e) =>
                     (e.currentTarget.style.backgroundColor =
-                      selectedCategory === category.id
-                        ? "#f5f5f5"
-                        : "transparent")
+                      selectedCategory === category.id ? "#f5f5f5" : "transparent")
                   }
                 >
                   {category.name || formatCategoryName(category.id)}
@@ -175,52 +184,100 @@ function CrowdbopRankings() {
 
       <Container fluid style={{ marginTop: "2rem" }}>
         <Row>
-          <Col xs={4}>
+          <Col xs={3}>
             <h2>Ranking</h2>
           </Col>
-          <Col xs={4}>
+          <Col xs={3}>
             <h2>Item</h2>
           </Col>
-          <Col xs={4}>
-            <h2>Wins</h2>
+          <Col
+            xs={3}
+            style={{
+              cursor: "pointer",
+              backgroundColor: sortBy !== "eloRating" ? "#FFE5DC" : "transparent",
+            }}
+            onClick={() => {
+              setSortBy("wins");
+              setPage(1);
+            }}
+          >
+            <h2 style={{ padding: "10px 0" }}>Wins</h2>
+          </Col>
+          <Col
+            xs={3}
+            style={{
+              cursor: "pointer",
+              backgroundColor: sortBy === "eloRating" ? "#FFE5DC" : "transparent",
+            }}
+            onClick={() => {
+              setSortBy("eloRating");
+              setPage(1);
+            }}
+          >
+            <h2 style={{ padding: "10px 0" }}>ELO</h2>
           </Col>
         </Row>
         <hr />
         {rankingsData && rankingsData.length > 0 ? (
-          rankingsData.map((item, index) => {
-            return (
-              <React.Fragment key={index}>
-                <Row style={{ marginTop: "1.5rem", marginBottom: "1.5rem" }}>
-                  <Col
-                    xs={4}
-                    className="d-flex align-items-center justify-content-center"
-                  >
-                    <h3 className="text-center">{item.rank}</h3>
-                  </Col>
-                  <Col xs={4}>
-                    <a
-                      href={itemBaseURL + item.ProductDetailURL}
-                      className="d-flex align-items-center justify-content-center"
-                    >
-                      <img
-                        src={imgBaseURL + item.PrimaryImageURL}
-                        alt={item.ProductName}
-                        style={{ marginRight: "10px", width: "150px" }}
-                      />
-                      <h3 className="mb-0">{item.ProductName}</h3>
-                    </a>
-                  </Col>
-                  <Col
-                    xs={4}
-                    className="d-flex align-items-center justify-content-center"
-                  >
-                    <h3 className="text-center">{item.Wins}</h3>
-                  </Col>
-                </Row>
-                {index === rankingsData.length - 1 ? "" : <hr />}
-              </React.Fragment>
-            );
-          })
+          rankingsData.map((item, index) => (
+            <React.Fragment key={index}>
+              <Row style={{ marginTop: "1.5rem", marginBottom: "1.5rem" }}>
+                <Col
+                  xs={3}
+                  className="d-flex align-items-center justify-content-center"
+                >
+                  <h3 className="text-center">{item.rank}</h3>
+                </Col>
+                <Col xs={3}>
+                  <div className="d-flex align-items-center justify-content-center position-relative">
+                    <img
+                      src={imgBaseURL + item.PrimaryImageURL}
+                      alt={item.ProductName}
+                      style={{ marginRight: "10px", width: "150px" }}
+                    />
+                    <div className="d-flex flex-column align-items-start">
+                      <Button
+                        variant="link"
+                        onClick={() => handleLike(item)}
+                        style={{
+                          backgroundColor: "white",
+                          borderRadius: "50%",
+                          padding: "4px",
+                          lineHeight: 1,
+                          color: "#EE4A1B",
+                          marginBottom: "5px"
+                        }}
+                        aria-label={`Like ${item.ProductName}`}
+                      >
+                        <FaHeart size={24} />
+                      </Button>
+                      <a
+                        href={itemBaseURL + item.ProductDetailURL}
+                        style={{ color: "black", textDecoration: "none" }}
+                      >
+                        <h3 className="mb-0">{item.ProductName}</h3>
+                      </a>
+                    </div>
+                  </div>
+                </Col>
+                <Col
+                  xs={3}
+                  className="d-flex align-items-center justify-content-center"
+                  style={{ backgroundColor: sortBy !== "eloRating" ? "#FFF4EE" : "transparent" }}
+                >
+                  <h3 className="text-center">{item.Wins}</h3>
+                </Col>
+                <Col
+                  xs={3}
+                  className="d-flex align-items-center justify-content-center"
+                  style={{ backgroundColor: sortBy === "eloRating" ? "#FFF4EE" : "transparent" }}
+                >
+                  <h3 className="text-center">{item.EloRating}</h3>
+                </Col>
+              </Row>
+              {index === rankingsData.length - 1 ? "" : <hr />}
+            </React.Fragment>
+          ))
         ) : (
           <div className="text-center my-5">
             <h3>No ranked products in this category yet</h3>
