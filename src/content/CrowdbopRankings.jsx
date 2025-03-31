@@ -13,6 +13,7 @@ function CrowdbopRankings() {
   const [selectedCategory, setSelectedCategory] = useState("shoes");
   const [showCategories, setShowCategories] = useState(false);
   const [sortBy, setSortBy] = useState("eloRating");
+  const [isLiked, setIsLiked] = useState(new Array(10).fill(0));
 
   const formatCategoryName = (categoryId) => {
     if (!categoryId) return "";
@@ -80,19 +81,28 @@ function CrowdbopRankings() {
     fetchRankings();
   }, [page, selectedCategory, sortBy]);
 
-  const handleNext = () => setPage((p) => p + 1);
-  const handlePrev = () => setPage((p) => p - 1);
+  const handleNext = () => {
+    setIsLiked(new Array(10).fill(0));
+    setPage((p) => p + 1);
+  };
+  const handlePrev = () => {
+    setIsLiked(new Array(10).fill(0));
+    setPage((p) => p - 1);
+  };
 
   const [userId, setUserId] = useState(sessionStorage.getItem("userId") || "");
 
-  const handleLike = async (product) => {
+  const handleLike = async (product, index) => {
     if (!userId) {
       alert("Please log in to like products.");
       return;
     }
 
     try {
-      
+      console.log(isLiked);
+      const newArray = [...isLiked];
+      newArray[index] = 1;
+      setIsLiked(newArray);
       const response = await fetch("https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -238,13 +248,13 @@ function CrowdbopRankings() {
                     <div className="d-flex flex-column align-items-start">
                       <Button
                         variant="link"
-                        onClick={() => handleLike(item)}
+                        onClick={() => handleLike(item, index)}
                         style={{
                           backgroundColor: "white",
                           borderRadius: "50%",
                           padding: "4px",
                           lineHeight: 1,
-                          color: "#EE4A1B",
+                          color: isLiked[index] == 1 ? "#EE4A1B" : "#808080",
                           marginBottom: "5px"
                         }}
                         aria-label={`Like ${item.ProductName}`}

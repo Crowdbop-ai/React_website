@@ -13,6 +13,7 @@ const CrowdbopVoting = () => {
   const [categories, setCategories] = useState([]); // List of available categories
   const [selectedCategory, setSelectedCategory] = useState("shoes"); // Default category
   const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
+  const [likedItems, setLikedItems] = useState([0, 0])
 
   // Fetch available categories on page load
   useEffect(() => {
@@ -91,7 +92,7 @@ const CrowdbopVoting = () => {
   };
 
   // Handle liking item
-  const handleLike = async (product) => {
+  const handleLike = async (product, index) => {
     if (!userId) {
       alert("Please log in to like products.");
       setShowModal(true);
@@ -99,6 +100,9 @@ const CrowdbopVoting = () => {
     }
 
     try {
+      const newArray = [...likedItems];
+      newArray[index] = 1;
+      setLikedItems(newArray);
       const response = await fetch("https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -383,7 +387,7 @@ const CrowdbopVoting = () => {
                     />
                     <Button
                       variant="link"
-                      onClick={() => handleLike(product)}
+                      onClick={() => handleLike(product, index)}
                       style={{
                         position: "absolute",
                         top: "12px",
@@ -393,7 +397,7 @@ const CrowdbopVoting = () => {
                         padding: "4px",
                         lineHeight: 1,
                         zIndex: 10,
-                        color: "#EE4A1B",
+                        color: likedItems[index] == 1 ? "#EE4A1B" : "#808080",
                       }}
                       aria-label={`Like ${product.ProductName}`}
                     >
