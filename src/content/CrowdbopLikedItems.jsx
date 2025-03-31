@@ -33,10 +33,32 @@ function CrowdbopLikedItems() {
             });
     }, [userId]);
 
-    // Function to delete an item locally (no API call since backend delete isn't working)
-    const handleDelete = (productSIN) => {
-        setLikedItems(prevItems => prevItems.filter(item => item.productSIN !== productSIN));
+    // Function to delete an item via the AWS API Gateway
+    const handleDelete = (productSIN, categoryId) => {
+        fetch("https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/remove-like", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                userId,
+                productSIN: productSIN,
+                categoryId: categoryId
+            })
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Failed to delete item.");
+            }
+            // On success, remove the item from state
+            setLikedItems(prevItems => prevItems.filter(item => item.ProductSIN !== productSIN));
+        })
+        .catch(error => {
+            console.error("Error deleting item:", error);
+            alert("Failed to delete item. Please try again.");
+        });
     };
+
 
     //userID submission
     const handleSubmit = () => {
@@ -116,46 +138,42 @@ function CrowdbopLikedItems() {
             <h1 className="text-center mb-4">Your Liked Items</h1>
             
             {/* If no liked items exist, show message */}
-            {likedItems.length === 0 ? (
-                <h3 className="text-center mt-4">You haven't liked any items yet.</h3>
-            ) : (
-                <>
-                    {/* Loop through liked items, displaying each as a row */}
-                    {likedItems.map((item, index) => (
-                        <React.Fragment key={index}>
-                            <Row className="align-items-center" style={{ marginBottom: "1.5rem" }}>
-                                {/* Product Image & Link */}
-                                <Col xs={4}>
-                                    <a href={itemBaseURL + item.ProductDetailURL} className="d-flex align-items-center">
-                                        <img 
-                                            src={imgBaseURL + item.PrimaryImageURL} 
-                                            alt={item.ProductName} 
-                                            style={{ width: "150px", borderRadius: "5px" }} 
-                                        />
-                                    </a>
-                                </Col>
-                                
-                                {/* Product Details */}
-                                <Col xs={6}>
-                                    <p style={{ margin: "0", fontSize: "18px" }}>
-                                        <strong>{item.ProductName}</strong> by {item.DesignerName} <br />
-                                        Price: <strong>${item.Price}</strong>
-                                    </p>
-                                </Col>
-                                
-                                {/* Delete Button */}
-                                <Col xs={2} className="text-center">
-                                    <Button variant="danger" onClick={() => handleDelete(item.productSIN)}>
-                                        <Trash size={24} />
-                                    </Button>
-                                </Col>
-                            </Row>
-                            {/* Add horizontal line between items */}
-                            {index !== likedItems.length - 1 && <hr />}
-                        </React.Fragment>
-                    ))}
-                </>
-            )}
+            {likedItems.map((item, index) => {
+                /*console.log("Rendering item with SIN:", item.ProductSIN, "Category:", item.CategoryID);*/
+                return (
+                    <React.Fragment key={index}>
+                        <Row className="align-items-center" style={{ marginBottom: "1.5rem" }}>
+                            {/* Product Image & Link */}
+                            <Col xs={4}>
+                                <a href={itemBaseURL + item.ProductDetailURL} className="d-flex align-items-center">
+                                    <img 
+                                        src={imgBaseURL + item.PrimaryImageURL} 
+                                        alt={item.ProductName} 
+                                        style={{ width: "150px", borderRadius: "5px" }} 
+                                    />
+                                </a>
+                            </Col>
+
+                            {/* Product Details */}
+                            <Col xs={6}>
+                                <p style={{ margin: "0", fontSize: "18px" }}>
+                                    <strong>{item.ProductName}</strong> by {item.DesignerName} <br />
+                                    Price: <strong>${item.Price}</strong>
+                                </p>
+                            </Col>
+
+                            {/* Delete Button */}
+                            <Col xs={2} className="text-center">
+                                <Button variant="danger" onClick={() => handleDelete(item.ProductSIN, item.CategoryID)}>
+                                    <Trash size={24} />
+                                </Button>
+                            </Col>
+                        </Row>
+                        {/* Add horizontal line between items */}
+                        {index !== likedItems.length - 1 && <hr />}
+                    </React.Fragment>
+                );
+            })}
         </Container>
     );
 }
