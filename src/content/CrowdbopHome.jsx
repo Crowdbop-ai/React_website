@@ -353,7 +353,7 @@ const CrowdbopHome = () => {
                 fontFamily: "'Archivo Black', sans-serif",
               }}
             >
-              {isLoading ? "Signing Up..." : "Sign Up"}
+              Sign Up
             </Button>
           </Modal.Footer>
         </Modal>
