@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button, Container, Row, Col, Modal, Form } from "react-bootstrap";
+import { FaHeart } from "react-icons/fa";
 import placeholderImage from "../assets/loading.JPG"; // Import the placeholder image
 
 const CrowdbopVoting = () => {
@@ -12,6 +13,7 @@ const CrowdbopVoting = () => {
   const [categories, setCategories] = useState([]); // List of available categories
   const [selectedCategory, setSelectedCategory] = useState("shoes"); // Default category
   const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
+  const [likedItems, setLikedItems] = useState([0, 0])
 
   // Fetch available categories on page load
   useEffect(() => {
@@ -86,6 +88,34 @@ const CrowdbopVoting = () => {
       setNextProducts(data.products);
     } catch (error) {
       console.error("Error fetching next product pair:", error);
+    }
+  };
+
+  // Handle liking item
+  const handleLike = async (product, index) => {
+    if (!userId) {
+      alert("Please log in to like products.");
+      setShowModal(true);
+      return;
+    }
+
+    try {
+      const newArray = [...likedItems];
+      newArray[index] = 1;
+      setLikedItems(newArray);
+      const response = await fetch("https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          productSIN: product.ProductSIN,
+          categoryId: selectedCategory
+        })
+      });
+      if (!response.ok) throw new Error("Failed to like product");
+      console.log("Product liked successfully");
+    } catch (error) {
+      console.error("Error liking product:", error);
     }
   };
 
@@ -299,16 +329,36 @@ const CrowdbopVoting = () => {
             return (
               <Col md={5} className="mb-4" key={product.ProductSIN}>
                 <div className="text-center">
-                  <img
-                    src={imageUrl}
-                    alt={product.ProductName}
-                    className="img-fluid mb-3"
-                    style={{
-                      maxHeight: "400px",
-                      width: "100%",
-                      objectFit: "contain",
-                    }}
-                  />
+                  <div style={{ position: "relative", marginBottom: "1rem" }}>
+                    <img
+                      src={imageUrl}
+                      alt={product.ProductName}
+                      className="img-fluid"
+                      style={{
+                        maxHeight: "400px",
+                        width: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
+                    <Button
+                      variant="link"
+                      onClick={() => handleLike(product, index)}
+                      style={{
+                        position: "absolute",
+                        top: "12px",
+                        right: "12px",
+                        backgroundColor: "white",
+                        borderRadius: "50%",
+                        padding: "4px",
+                        lineHeight: 1,
+                        zIndex: 10,
+                        color: likedItems[index] == 1 ? "#EE4A1B" : "#808080",
+                      }}
+                      aria-label={`Like ${product.ProductName}`}
+                    >
+                      <FaHeart size={30} />
+                    </Button>
+                  </div>
                   <h3
                     className="mt-2 font-weight-bold"
                     style={{
