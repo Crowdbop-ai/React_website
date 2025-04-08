@@ -53,20 +53,30 @@ const CrowdbopHome = () => {
   // if (error) {
   //   return <div>Error: {error}</div>;
   // }  
+  const colorOptions = [
+    'Red', 'Pink', 'Orange', 'Yellow', 'Green', 'Blue', 
+    'Purple', 'White', 'Cream', 'Beige', 'Brown', 
+    'Black', 'Gray', 'Silver', 'Gold', 'Metallic', 
+    'Transparent', 'Multicolor', 'Other'
+  ];
 
   const [isNewUser, setIsNewUser] = useState(false);
   const [userDetails, setUserDetails] = useState({
     gender: '',
     preferredDesigner: [],
-    age: ''
+    age: '',
+    priceRange: [],
+    colorPreferences: []
   });
   
   const handleNewUserToggle = () => {
     setIsNewUser(!isNewUser);
     setUserDetails({
       gender: '',
-      preferredDesigner: '',
-      age: ''
+      preferredDesigner: [],
+      age: '',
+      priceRange: [],
+      colorPreferences: []
     });
   };
   
@@ -77,10 +87,7 @@ const CrowdbopHome = () => {
     }));
   };
   
-  const isSignupValid = userId.trim() && 
-                        userDetails.gender && 
-                        userDetails.preferredDesigner && 
-                        userDetails.age;
+  const isSignupValid = userId.trim();
 
 
   const handleLogin = async () => {
@@ -137,7 +144,14 @@ const CrowdbopHome = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ userId: userId.trim() }),
+          body: JSON.stringify({
+             userId: userId.trim(),
+             gender: userDetails.gender,
+             age: userDetails.age,
+             preferredDesigners: userDetails.preferredDesigner,
+             priceRangePreference: userDetails.priceRange,
+             colorPreferences: userDetails.colorPreferences
+          }),
         }
       );
 
@@ -177,6 +191,40 @@ const CrowdbopHome = () => {
         return {
           ...prev,
           preferredDesigner: [...currentDesigners, designer]
+        };
+      }
+    });
+  };
+
+  const togglePriceRange = (range) => {
+    setUserDetails(prev => {
+      const currentRanges = prev.priceRange;
+      if (currentRanges.includes(range)) {
+        return {
+          ...prev,
+          priceRange: currentRanges.filter(r => r !== range)
+        };
+      } else {
+        return {
+          ...prev,
+          priceRange: [...currentRanges, range]
+        };
+      }
+    });
+  };
+  
+  const toggleColor = (color) => {
+    setUserDetails(prev => {
+      const currentColors = prev.colorPreferences;
+      if (currentColors.includes(color)) {
+        return {
+          ...prev,
+          colorPreferences: currentColors.filter(c => c !== color)
+        };
+      } else {
+        return {
+          ...prev,
+          colorPreferences: [...currentColors, color]
         };
       }
     });
@@ -229,6 +277,135 @@ const CrowdbopHome = () => {
     
 
         {/* User ID Modal */}
+        {/* <Modal
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          centered
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton={false}>
+            <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+              {isNewUser ? "Create New Account" : "Enter Your User ID"}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group controlId="userIdInput" className="mb-3">
+                <Form.Label>User ID</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Ex: bbadger"
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  style={{ fontFamily: "Arial, sans-serif" }}
+                />
+                <Form.Text className="text-muted">
+                  This ID will be used to track your votes.
+                </Form.Text>
+              </Form.Group>
+
+              <Form.Check 
+                type="switch"
+                id="new-user-switch"
+                label="New User?"
+                checked={isNewUser}
+                onChange={handleNewUserToggle}
+                className="mb-3"
+              />
+
+              {isNewUser && (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label>What is your gender?</Form.Label>
+                    <Form.Select 
+                      value={userDetails.gender}
+                      onChange={(e) => handleUserDetailChange('gender', e.target.value)}
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </Form.Select>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>What is your age?</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="15"
+                      max="120"
+                      value={userDetails.age}
+                      onChange={(e) => handleUserDetailChange('age', e.target.value)}
+                      placeholder="Enter your age"
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>What is your preferred designer? (Select all that apply)</Form.Label>
+                    <div className="d-flex flex-wrap" style={{ gap: '10px' }}>
+                      {designers.map((designer) => (
+                        <Button
+                          key={designer}
+                          variant={userDetails.preferredDesigner.includes(designer) ? 'secondary' : 'outline-secondary'}
+                          onClick={() => toggleDesignerSelection(designer)}
+                          style={{
+                            borderRadius: '50px',
+                            padding: '8px 12px',
+                            minHeight: '40px', 
+                            flex: '1 0 auto', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <span style={{
+                            display: 'inline-block',
+                            maxWidth: '100%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {designer}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  </Form.Group>
+                </>
+              )}
+            </Form>
+            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={handleLogin}
+              disabled={isLoading || isNewUser}
+              style={{
+                fontFamily: "'Archivo Black', sans-serif",
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSignup}
+              disabled={isLoading || !isNewUser || !isSignupValid}
+              style={{
+                backgroundColor: "#E85C41",
+                border: "none",
+                fontFamily: "'Archivo Black', sans-serif",
+              }}
+            >
+              Sign Up
+            </Button>
+          </Modal.Footer>
+        </Modal> */}
+
         <Modal
           show={showModal}
           onHide={() => setShowModal(false)}
@@ -325,6 +502,58 @@ const CrowdbopHome = () => {
                           </span>
                         </Button>
                       ))}
+                    </div>
+                  </Form.Group>
+                  {/* Price Range Multi-Select */}
+                  <Form.Group className="mb-3">
+                    <Form.Label>What are your preferred price ranges? (Select all that apply)</Form.Label>
+                    <div className="d-flex flex-column" style={{ gap: '8px' }}>
+                      {['Budget: Under $50', 'Affordable: $50 – $150', 'Mid-Range: $150 – $500', 
+                        'Premium: $500 – $1000', 'Luxury: $1000+'].map((range) => {
+                        const value = range.split(':')[0].toLowerCase().trim();
+                        return (
+                          <Form.Check 
+                            key={value}
+                            type="checkbox"
+                            id={`price-${value}`}
+                            label={range}
+                            checked={userDetails.priceRange.includes(value)}
+                            onChange={() => togglePriceRange(value)}
+                            style={{"accentColor": "black", color:"black"}}
+                          />
+                        );
+                      })}
+                    </div>
+                  </Form.Group>
+
+                  {/* Color Preferences Multi-Select */}
+                  <Form.Group className="mb-3">
+                    <Form.Label>What are your preferred colors? (Select all that apply)</Form.Label>
+                    <div className="d-flex flex-column" style={{ gap: '8px' }}>
+                      {colorOptions.map((color) => {
+                        const isDark = ['Black', 'Blue', 'Brown', 'Gray', 'Green', 'Purple', 'Red'].includes(color);
+                        return (
+                          <div key={color} className="d-flex align-items-center">
+                            <Form.Check
+                              type="checkbox"
+                              id={`color-${color}`}
+                              checked={userDetails.colorPreferences.includes(color)}
+                              onChange={() => toggleColor(color)}
+                              className="me-2"
+                            />
+                            <div 
+                              style={{
+                                width: '20px',
+                                height: '20px',
+                                backgroundColor: color.toLowerCase(),
+                                border: '1px solid #ddd',
+                                marginRight: '10px'
+                              }}
+                            />
+                            <span style={{ color: isDark ? '#333' : '#000' }}>{color}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </Form.Group>
                 </>
