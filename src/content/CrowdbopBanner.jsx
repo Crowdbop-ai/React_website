@@ -43,6 +43,14 @@ const CrowdbopBanner = () => {
             >
               Rankings
             </a>
+
+            <a
+              href="/liked"
+              className="px-4 py-2 text-white font-sans"
+              style={{ fontFamily: "Arial, sans-serif" }}
+            >
+              Liked List
+            </a>
           </div>
         </div>
       </div>

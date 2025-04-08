@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button, Container, Row, Col, Modal, Form } from "react-bootstrap";
+import { FaHeart } from "react-icons/fa";
 import placeholderImage from "../assets/loading.JPG"; // Import the placeholder image
 
 const CrowdbopVoting = () => {
@@ -12,6 +13,7 @@ const CrowdbopVoting = () => {
   const [categories, setCategories] = useState([]); // List of available categories
   const [selectedCategory, setSelectedCategory] = useState("shoes"); // Default category
   const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
+  const [likedItems, setLikedItems] = useState([0, 0]);
 
   // Fetch available categories on page load
   useEffect(() => {
@@ -89,6 +91,37 @@ const CrowdbopVoting = () => {
     }
   };
 
+  // Handle liking item
+  const handleLike = async (product, index) => {
+    if (!userId) {
+      alert("Please log in to like products.");
+      setShowModal(true);
+      return;
+    }
+
+    try {
+      const newArray = [...likedItems];
+      newArray[index] = 1;
+      setLikedItems(newArray);
+      const response = await fetch(
+        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            productSIN: product.ProductSIN,
+            categoryId: selectedCategory,
+          }),
+        }
+      );
+      if (!response.ok) throw new Error("Failed to like product");
+      console.log("Product liked successfully");
+    } catch (error) {
+      console.error("Error liking product:", error);
+    }
+  };
+
   // Handle modal submission
   const handleSubmit = () => {
     if (userId.trim()) {
@@ -156,12 +189,6 @@ const CrowdbopVoting = () => {
     fetchNextPair();
   };
 
-  // Handle logout
-  const handleLogout = () => {
-    sessionStorage.removeItem("userId"); // Remove userId from session storage
-    setUserId(""); // Clear userId from state
-  };
-
   // Format category ID for display (remove underscores, capitalize first letter)
   const formatCategoryName = (categoryId) => {
     if (!categoryId) return "";
@@ -182,6 +209,13 @@ const CrowdbopVoting = () => {
       <h1 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         WHICH PRODUCT DO YOU PREFER?
       </h1>
+
+      {/* display userID */}
+      <div className="text-center mt-3">
+        <p>
+          <b>User ID: {userId}</b>
+        </p>
+      </div>
 
       {/* Category dropdown */}
       <div className="d-flex justify-content-center mb-4">
@@ -251,56 +285,6 @@ const CrowdbopVoting = () => {
         </div>
       </div>
 
-      {/* User ID Modal */}
-      <Modal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        centered
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton={false}>
-          <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
-            Enter Your User ID
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-          >
-            <Form.Group controlId="userIdInput">
-              <Form.Label>User ID</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Ex: bbadger"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                style={{ fontFamily: "Arial, sans-serif" }}
-              />
-              <Form.Text className="text-muted">
-                This ID will be used to track your votes.
-              </Form.Text>
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            style={{
-              backgroundColor: "#E85C41",
-              border: "none",
-              fontFamily: "'Archivo Black', sans-serif",
-            }}
-          >
-            Submit
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
       {/* Product Display */}
       <Row className="justify-content-center">
         {isLoading ? (
@@ -349,16 +333,36 @@ const CrowdbopVoting = () => {
             return (
               <Col md={5} className="mb-4" key={product.ProductSIN}>
                 <div className="text-center">
-                  <img
-                    src={imageUrl}
-                    alt={product.ProductName}
-                    className="img-fluid mb-3"
-                    style={{
-                      maxHeight: "400px",
-                      width: "100%",
-                      objectFit: "contain",
-                    }}
-                  />
+                  <div style={{ position: "relative", marginBottom: "1rem" }}>
+                    <img
+                      src={imageUrl}
+                      alt={product.ProductName}
+                      className="img-fluid"
+                      style={{
+                        maxHeight: "400px",
+                        width: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
+                    <Button
+                      variant="link"
+                      onClick={() => handleLike(product, index)}
+                      style={{
+                        position: "absolute",
+                        top: "12px",
+                        right: "12px",
+                        backgroundColor: "white",
+                        borderRadius: "50%",
+                        padding: "4px",
+                        lineHeight: 1,
+                        zIndex: 10,
+                        color: likedItems[index] == 1 ? "#EE4A1B" : "#808080",
+                      }}
+                      aria-label={`Like ${product.ProductName}`}
+                    >
+                      <FaHeart size={30} />
+                    </Button>
+                  </div>
                   <h3
                     className="mt-2 font-weight-bold"
                     style={{
@@ -412,42 +416,6 @@ const CrowdbopVoting = () => {
             Skip to Rankings
           </Button>
         </Link>
-      </div>
-
-      {/* Login/Logout Section */}
-      <div className="text-center mt-3">
-        {userId ? (
-          // If logged in, show User ID and Logout button
-          <>
-            <small>User ID: {userId}</small>
-            <Button
-              variant="link"
-              onClick={handleLogout}
-              style={{
-                color: "#E85C41",
-                fontSize: "0.8rem",
-                marginLeft: "10px",
-                textDecoration: "none",
-              }}
-            >
-              (Logout)
-            </Button>
-          </>
-        ) : (
-          // If not logged in, show Login button
-          <Button
-            variant="link"
-            onClick={() => setShowModal(true)}
-            style={{
-              color: "#E85C41",
-              fontSize: "0.8rem",
-              marginLeft: "10px",
-              textDecoration: "none",
-            }}
-          >
-            (Log In)
-          </Button>
-        )}
       </div>
     </Container>
   );

@@ -1,21 +1,187 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap";
 
 const CrowdbopHome = () => {
   const [isAnimated, setIsAnimated] = useState(false);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false); // Control modal visibility
+  const [userId, setUserId] = useState(sessionStorage.getItem("userId") || ""); // Get userId from session storage if it exists
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [designers, setDesigners] = useState([]); // designerNames
 
   // Trigger animations after component mount
   useEffect(() => {
+    const fetchDesigners = async () => {
+      try {
+        // Correct path - assumes JSON is in public/assets
+        const response = await fetch("src/assets/top_designers.json");
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data) {
+          throw new Error("No data received");
+        }
+
+        // // Extract just the values (designer names) from the object
+        const designerNames = Object.values(data);
+        setDesigners(designerNames);
+      } catch (err) {
+        console.error("Failed to fetch designers:", err);
+        setError("Failed to load designer data. Please refresh the page.");
+      }
+    };
+
+    fetchDesigners();
+
+    if (!userId) {
+      setShowModal(true);
+    }
     setTimeout(() => setIsAnimated(true), 100);
   }, []);
 
-  // Handle navigation (would use Link in your actual app)
-  const handleStartVoting = () => {
-    alert("This would navigate to voting in your actual app");
-    // In your real code, use: navigate('/voting') or history.push('/voting')
+  // if (isLoading) {
+  //   return <div>Loading designers...</div>;
+  // }
+
+  // if (error) {
+  //   return <div>Error: {error}</div>;
+  // }
+
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [userDetails, setUserDetails] = useState({
+    gender: "",
+    preferredDesigner: [],
+    age: "",
+  });
+
+  const handleNewUserToggle = () => {
+    setIsNewUser(!isNewUser);
+    setUserDetails({
+      gender: "",
+      preferredDesigner: "",
+      age: "",
+    });
+  };
+
+  const handleUserDetailChange = (field, value) => {
+    setUserDetails((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const isSignupValid =
+    userId.trim() &&
+    userDetails.gender &&
+    userDetails.preferredDesigner &&
+    userDetails.age;
+
+  const handleLogin = async () => {
+    if (!userId.trim()) {
+      setError("Please enter a valid user ID.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId }),
+        }
+      );
+
+      if (response.ok) {
+        // Successful login (200)
+        sessionStorage.setItem("userId", userId);
+        setShowModal(false);
+      } else if (response.status === 401) {
+        // User not found
+        setError("User not found. Please sign up first.");
+      } else {
+        // Other error
+        setError("An error occurred. Please try again.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Failed to connect to the server. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignup = async () => {
+    if (!userId.trim()) {
+      setError("Please enter a valid user ID.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId: userId.trim() }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        setError(data.message || "A user with this ID already exists");
+      } else {
+        sessionStorage.setItem("userId", userId);
+        setShowModal(false);
+      }
+    } catch (err) {
+      setError("Failed to sign up. Please try again.");
+    } finally {
+      console.log(userDetails);
+      setIsLoading(false);
+    }
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    sessionStorage.removeItem("userId"); // Remove userId from session storage
+    setUserId(""); // Clear userId from state
+    setShowModal(true);
+  };
+
+  //designer selection
+  const toggleDesignerSelection = (designer) => {
+    setUserDetails((prev) => {
+      const currentDesigners = prev.preferredDesigner;
+      if (currentDesigners.includes(designer)) {
+        return {
+          ...prev,
+          preferredDesigner: currentDesigners.filter((d) => d !== designer),
+        };
+      } else {
+        return {
+          ...prev,
+          preferredDesigner: [...currentDesigners, designer],
+        };
+      }
+    });
   };
 
   return (
@@ -63,6 +229,151 @@ const CrowdbopHome = () => {
           Your opinions shape our collection.
         </p>
 
+        {/* User ID Modal */}
+        <Modal
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          centered
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton={false}>
+            <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+              {isNewUser ? "Create New Account" : "Enter Your User ID"}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group controlId="userIdInput" className="mb-3">
+                <Form.Label>User ID</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Ex: bbadger"
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  style={{ fontFamily: "Arial, sans-serif" }}
+                />
+                <Form.Text className="text-muted">
+                  This ID will be used to track your votes.
+                </Form.Text>
+              </Form.Group>
+
+              <Form.Check
+                type="switch"
+                id="new-user-switch"
+                label="New User?"
+                checked={isNewUser}
+                onChange={handleNewUserToggle}
+                className="mb-3"
+              />
+
+              {isNewUser && (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label>What is your gender?</Form.Label>
+                    <Form.Select
+                      value={userDetails.gender}
+                      onChange={(e) =>
+                        handleUserDetailChange("gender", e.target.value)
+                      }
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </Form.Select>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>What is your age?</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="15"
+                      max="120"
+                      value={userDetails.age}
+                      onChange={(e) =>
+                        handleUserDetailChange("age", e.target.value)
+                      }
+                      placeholder="Enter your age"
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>
+                      What is your preferred designer? (Select all that apply)
+                    </Form.Label>
+                    <div className="d-flex flex-wrap" style={{ gap: "10px" }}>
+                      {designers.map((designer) => (
+                        <Button
+                          key={designer}
+                          variant={
+                            userDetails.preferredDesigner.includes(designer)
+                              ? "secondary"
+                              : "outline-secondary"
+                          }
+                          onClick={() => toggleDesignerSelection(designer)}
+                          style={{
+                            borderRadius: "50px",
+                            padding: "8px 12px",
+                            minHeight: "40px",
+                            flex: "1 0 auto",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            textAlign: "center",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: "inline-block",
+                              maxWidth: "100%",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {designer}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  </Form.Group>
+                </>
+              )}
+            </Form>
+            {error && (
+              <Alert variant="danger" className="mt-3">
+                {error}
+              </Alert>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={handleLogin}
+              disabled={isLoading || isNewUser}
+              style={{
+                fontFamily: "'Archivo Black', sans-serif",
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSignup}
+              disabled={isLoading || !isNewUser || !isSignupValid}
+              style={{
+                backgroundColor: "#E85C41",
+                border: "none",
+                fontFamily: "'Archivo Black', sans-serif",
+              }}
+            >
+              {isLoading ? "Signing Up..." : "Sign Up"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
         {/* Custom Button */}
         {/* Buttons Container (Stacked Vertically) */}
         <div
@@ -293,6 +604,32 @@ const CrowdbopHome = () => {
           </button>
         </div>
       </div>
+
+      {/*userId and logout display*/}
+      {userId && (
+        <Row className="justify-content-center mt-3 mb-3">
+          <Col xs={12} className="text-center mb-2">
+            <p className="mb-0">
+              <strong>User ID: {userId}</strong>
+            </p>
+          </Col>
+          <Col xs="auto" className="text-center">
+            <Button
+              variant="warning"
+              onClick={handleLogout}
+              className="text-white font-weight-bold"
+              style={{
+                backgroundColor: "#EE4A1B",
+                fontWeight: "bold",
+                minWidth: "100px",
+                marginBottom: "40px",
+              }}
+            >
+              Logout
+            </Button>
+          </Col>
+        </Row>
+      )}
 
       {/* How It Works Section */}
       <div
