@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Modal, Button, Form, Row, Col, Alert} from "react-bootstrap";
+import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap";
 
 const CrowdbopHome = () => {
   const [isAnimated, setIsAnimated] = useState(false);
@@ -10,25 +10,24 @@ const CrowdbopHome = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [designers, setDesigners] = useState([]); // designerNames
-  
 
   // Trigger animations after component mount
   useEffect(() => {
     const fetchDesigners = async () => {
       try {
         // Correct path - assumes JSON is in public/assets
-        const response = await fetch('src/assets/top_designers.json');
-        
+        const response = await fetch("src/assets/top_designers.json");
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (!data) {
-          throw new Error('No data received');
+          throw new Error("No data received");
         }
-        
+
         // // Extract just the values (designer names) from the object
         const designerNames = Object.values(data);
         setDesigners(designerNames);
@@ -52,55 +51,58 @@ const CrowdbopHome = () => {
 
   // if (error) {
   //   return <div>Error: {error}</div>;
-  // }  
+  // }
 
   const [isNewUser, setIsNewUser] = useState(false);
   const [userDetails, setUserDetails] = useState({
-    gender: '',
+    gender: "",
     preferredDesigner: [],
-    age: ''
+    age: "",
   });
-  
+
   const handleNewUserToggle = () => {
     setIsNewUser(!isNewUser);
     setUserDetails({
-      gender: '',
-      preferredDesigner: '',
-      age: ''
+      gender: "",
+      preferredDesigner: "",
+      age: "",
     });
   };
-  
+
   const handleUserDetailChange = (field, value) => {
-    setUserDetails(prev => ({
+    setUserDetails((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
-  
-  const isSignupValid = userId.trim() && 
-                        userDetails.gender && 
-                        userDetails.preferredDesigner && 
-                        userDetails.age;
 
+  const isSignupValid =
+    userId.trim() &&
+    userDetails.gender &&
+    userDetails.preferredDesigner &&
+    userDetails.age;
 
   const handleLogin = async () => {
     if (!userId.trim()) {
       setError("Please enter a valid user ID.");
       return;
     }
-  
+
     setIsLoading(true);
     setError(null);
-  
+
     try {
-      const response = await fetch('https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId }),
-      });
-  
+      const response = await fetch(
+        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId }),
+        }
+      );
+
       if (response.ok) {
         // Successful login (200)
         sessionStorage.setItem("userId", userId);
@@ -166,17 +168,17 @@ const CrowdbopHome = () => {
 
   //designer selection
   const toggleDesignerSelection = (designer) => {
-    setUserDetails(prev => {
+    setUserDetails((prev) => {
       const currentDesigners = prev.preferredDesigner;
       if (currentDesigners.includes(designer)) {
         return {
           ...prev,
-          preferredDesigner: currentDesigners.filter(d => d !== designer)
+          preferredDesigner: currentDesigners.filter((d) => d !== designer),
         };
       } else {
         return {
           ...prev,
-          preferredDesigner: [...currentDesigners, designer]
+          preferredDesigner: [...currentDesigners, designer],
         };
       }
     });
@@ -226,7 +228,6 @@ const CrowdbopHome = () => {
           Help us discover the most popular items by voting on your favorites!
           Your opinions shape our collection.
         </p>
-    
 
         {/* User ID Modal */}
         <Modal
@@ -257,7 +258,7 @@ const CrowdbopHome = () => {
                 </Form.Text>
               </Form.Group>
 
-              <Form.Check 
+              <Form.Check
                 type="switch"
                 id="new-user-switch"
                 label="New User?"
@@ -270,9 +271,11 @@ const CrowdbopHome = () => {
                 <>
                   <Form.Group className="mb-3">
                     <Form.Label>What is your gender?</Form.Label>
-                    <Form.Select 
+                    <Form.Select
                       value={userDetails.gender}
-                      onChange={(e) => handleUserDetailChange('gender', e.target.value)}
+                      onChange={(e) =>
+                        handleUserDetailChange("gender", e.target.value)
+                      }
                     >
                       <option value="">Select gender</option>
                       <option value="male">Male</option>
@@ -288,39 +291,49 @@ const CrowdbopHome = () => {
                       min="15"
                       max="120"
                       value={userDetails.age}
-                      onChange={(e) => handleUserDetailChange('age', e.target.value)}
+                      onChange={(e) =>
+                        handleUserDetailChange("age", e.target.value)
+                      }
                       placeholder="Enter your age"
                     />
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label>What is your preferred designer? (Select all that apply)</Form.Label>
-                    <div className="d-flex flex-wrap" style={{ gap: '10px' }}>
+                    <Form.Label>
+                      What is your preferred designer? (Select all that apply)
+                    </Form.Label>
+                    <div className="d-flex flex-wrap" style={{ gap: "10px" }}>
                       {designers.map((designer) => (
                         <Button
                           key={designer}
-                          variant={userDetails.preferredDesigner.includes(designer) ? 'secondary' : 'outline-secondary'}
+                          variant={
+                            userDetails.preferredDesigner.includes(designer)
+                              ? "secondary"
+                              : "outline-secondary"
+                          }
                           onClick={() => toggleDesignerSelection(designer)}
                           style={{
-                            borderRadius: '50px',
-                            padding: '8px 12px',
-                            minHeight: '40px', 
-                            flex: '1 0 auto', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            textAlign: 'center',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            borderRadius: "50px",
+                            padding: "8px 12px",
+                            minHeight: "40px",
+                            flex: "1 0 auto",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            textAlign: "center",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          <span style={{
-                            display: 'inline-block',
-                            maxWidth: '100%',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                          }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              maxWidth: "100%",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
                             {designer}
                           </span>
                         </Button>
@@ -330,7 +343,11 @@ const CrowdbopHome = () => {
                 </>
               )}
             </Form>
-            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+            {error && (
+              <Alert variant="danger" className="mt-3">
+                {error}
+              </Alert>
+            )}
           </Modal.Body>
           <Modal.Footer>
             <Button
@@ -368,6 +385,60 @@ const CrowdbopHome = () => {
             marginTop: "30px",
           }}
         >
+          {/* <button
+            onClick={() => setShowModal(true)}
+            className="login-button"
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "20px",
+              backgroundColor: "#fff",
+              color: "#E85C41",
+              border: "2px solid #E85C41",
+              borderRadius: "50px",
+              padding: "8px 20px",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "#E85C41";
+              e.currentTarget.style.color = "#fff";
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow =
+                "0 6px 20px rgba(232, 92, 65, 0.4)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "#fff";
+              e.currentTarget.style.color = "#E85C41";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow =
+                "0 4px 14px rgba(232, 92, 65, 0.2)";
+            }}
+          >
+            Log In
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ marginLeft: "8px" }}
+            >
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+          </button> */}
           <button
             onClick={() => navigate("/voting")}
             className="voting-button"
@@ -422,7 +493,8 @@ const CrowdbopHome = () => {
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </button>
-          <button
+
+          {/* <button
             onClick={() => navigate("/liked")}
             className="voting-button"
             style={{
@@ -475,6 +547,60 @@ const CrowdbopHome = () => {
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
+          </button> */}
+          <button
+            onClick={() => navigate("/rankings")}
+            className="voting-button"
+            style={{
+              position: "relative",
+              backgroundColor: "#fff",
+              color: "#E85C41",
+              border: "2px solid #E85C41",
+              borderRadius: "50px",
+              padding: "15px 40px",
+              fontSize: "1.3rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "#E85C41";
+              e.currentTarget.style.color = "#fff";
+              e.currentTarget.style.transform = "translateY(-3px)";
+              e.currentTarget.style.boxShadow =
+                "0 6px 20px rgba(232, 92, 65, 0.4)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "#fff";
+              e.currentTarget.style.color = "#E85C41";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow =
+                "0 4px 14px rgba(232, 92, 65, 0.2)";
+            }}
+          >
+            Skip to Leaderboard
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                marginLeft: "10px",
+                animation: "arrowBounce 1s infinite",
+              }}
+            >
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
           </button>
         </div>
       </div>
@@ -483,7 +609,9 @@ const CrowdbopHome = () => {
       {userId && (
         <Row className="justify-content-center mt-3 mb-3">
           <Col xs={12} className="text-center mb-2">
-            <p className="mb-0"><strong>User ID: {userId}</strong></p>
+            <p className="mb-0">
+              <strong>User ID: {userId}</strong>
+            </p>
           </Col>
           <Col xs="auto" className="text-center">
             <Button
@@ -494,7 +622,7 @@ const CrowdbopHome = () => {
                 backgroundColor: "#EE4A1B",
                 fontWeight: "bold",
                 minWidth: "100px",
-                marginBottom: "40px"
+                marginBottom: "40px",
               }}
             >
               Logout
@@ -818,6 +946,76 @@ const CrowdbopHome = () => {
               }}
             >
               Find new favorites you might have missed
+            </p>
+          </div>
+
+          {/* Step 5 */}
+          <div
+            className="step-card"
+            style={{
+              padding: "20px",
+              backgroundColor: "#fafafa",
+              borderRadius: "8px",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              cursor: "default",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "translateY(-5px)";
+              e.currentTarget.style.boxShadow = "0 8px 15px rgba(0,0,0,0.1)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "15px",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#E85C41",
+                  color: "#fff",
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: "12px",
+                  fontWeight: "bold",
+                  fontSize: "18px",
+                }}
+              >
+                5
+              </div>
+              <h3
+                style={{
+                  margin: "0",
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  color: "#333",
+                }}
+              >
+                ELO Ranking System
+              </h3>
+            </div>
+            <p
+              style={{
+                margin: "0",
+                color: "#666",
+                fontFamily: "Arial, sans-serif",
+                fontSize: "0.95rem",
+                lineHeight: "1.5",
+              }}
+            >
+              Our leaderboard uses the ELO system from chess - items gain or
+              lose points based on their rank and who they beat, creating a
+              dynamic ranking that evolves with each vote.
             </p>
           </div>
         </div>

@@ -13,7 +13,7 @@ const CrowdbopVoting = () => {
   const [categories, setCategories] = useState([]); // List of available categories
   const [selectedCategory, setSelectedCategory] = useState("shoes"); // Default category
   const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
-  const [likedItems, setLikedItems] = useState([0, 0])
+  const [likedItems, setLikedItems] = useState([0, 0]);
 
   // Fetch available categories on page load
   useEffect(() => {
@@ -103,15 +103,18 @@ const CrowdbopVoting = () => {
       const newArray = [...likedItems];
       newArray[index] = 1;
       setLikedItems(newArray);
-      const response = await fetch("https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          productSIN: product.ProductSIN,
-          categoryId: selectedCategory
-        })
-      });
+      const response = await fetch(
+        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            productSIN: product.ProductSIN,
+            categoryId: selectedCategory,
+          }),
+        }
+      );
       if (!response.ok) throw new Error("Failed to like product");
       console.log("Product liked successfully");
     } catch (error) {
@@ -186,7 +189,6 @@ const CrowdbopVoting = () => {
     fetchNextPair();
   };
 
-
   // Format category ID for display (remove underscores, capitalize first letter)
   const formatCategoryName = (categoryId) => {
     if (!categoryId) return "";
@@ -210,7 +212,9 @@ const CrowdbopVoting = () => {
 
       {/* display userID */}
       <div className="text-center mt-3">
-          <p><b>User ID: {userId}</b></p>
+        <p>
+          <b>User ID: {userId}</b>
+        </p>
       </div>
 
       {/* Category dropdown */}
