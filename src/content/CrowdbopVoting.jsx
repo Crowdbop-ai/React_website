@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Button, Container, Row, Col, Modal, Form } from "react-bootstrap";
 import { FaHeart } from "react-icons/fa";
 import placeholderImage from "../assets/loading.JPG"; // Import the placeholder image
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 
 const CrowdbopVoting = () => {
   const [currentProducts, setCurrentProducts] = useState([]); // Current pair of products to display
@@ -11,7 +13,7 @@ const CrowdbopVoting = () => {
   const [showModal, setShowModal] = useState(false); // Control modal visibility
   const [userId, setUserId] = useState(sessionStorage.getItem("userId") || ""); // Get userId from session storage if it exists
   const [categories, setCategories] = useState([]); // List of available categories
-  const [selectedCategory, setSelectedCategory] = useState("shoes"); // Default category
+  const [selectedCategory, setSelectedCategory] = useState(sessionStorage.getItem("selectedCategory") || "shoes"); // Default category
   const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
   const [likedItems, setLikedItems] = useState([0, 0]);
 
@@ -185,6 +187,9 @@ const CrowdbopVoting = () => {
     // Replace the current pair with the pre-fetched next pair
     setCurrentProducts(nextProducts);
 
+    // Reset the liked items for the new pair
+    setLikedItems([0, 0]);
+
     // Fetch the next pair immediately
     fetchNextPair();
   };
@@ -202,7 +207,16 @@ const CrowdbopVoting = () => {
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
     setShowCategories(false); // Close dropdown after selection
+    // Save in session storage
+    sessionStorage.setItem("selectedCategory", categoryId)
   };
+
+  // Like Button tooltip
+  const renderTooltip = (props) => (
+    <Tooltip id="button-tooltip" {...props}>
+      Click to add this item to your liked items!
+    </Tooltip>
+  );
 
   return (
     <Container className="py-5">
@@ -271,10 +285,10 @@ const CrowdbopVoting = () => {
                     (e.currentTarget.style.backgroundColor = "#f0f0f0")
                   }
                   onMouseOut={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      selectedCategory === category.id
-                        ? "#f5f5f5"
-                        : "transparent")
+                  (e.currentTarget.style.backgroundColor =
+                    selectedCategory === category.id
+                      ? "#f5f5f5"
+                      : "transparent")
                   }
                 >
                   {category.name || formatCategoryName(category.id)}
@@ -344,24 +358,30 @@ const CrowdbopVoting = () => {
                         objectFit: "contain",
                       }}
                     />
-                    <Button
-                      variant="link"
-                      onClick={() => handleLike(product, index)}
-                      style={{
-                        position: "absolute",
-                        top: "12px",
-                        right: "12px",
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "4px",
-                        lineHeight: 1,
-                        zIndex: 10,
-                        color: likedItems[index] == 1 ? "#EE4A1B" : "#808080",
-                      }}
-                      aria-label={`Like ${product.ProductName}`}
+                    <OverlayTrigger
+                      placement="right"
+                      delay={{ show: 250, hide: 400 }}
+                      overlay={renderTooltip}
                     >
-                      <FaHeart size={30} />
-                    </Button>
+                      <Button
+                        variant="link"
+                        onClick={() => handleLike(product, index)}
+                        style={{
+                          position: "absolute",
+                          top: "12px",
+                          right: "12px",
+                          backgroundColor: "white",
+                          borderRadius: "50%",
+                          padding: "4px",
+                          lineHeight: 1,
+                          zIndex: 10,
+                          color: likedItems[index] == 1 ? "#EE4A1B" : "#808080",
+                        }}
+                        aria-label={`Like ${product.ProductName}`}
+                      >
+                        <FaHeart size={30} />
+                      </Button>
+                    </OverlayTrigger>
                   </div>
                   <h3
                     className="mt-2 font-weight-bold"
