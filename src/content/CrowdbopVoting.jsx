@@ -219,17 +219,10 @@ const CrowdbopVoting = () => {
   );
 
   return (
-    <Container className="py-5">
+    <Container>
       <h1 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         WHICH PRODUCT DO YOU PREFER?
       </h1>
-
-      {/* display userID */}
-      <div className="text-center mt-3">
-        <p>
-          <b>User ID: {userId}</b>
-        </p>
-      </div>
 
       {/* Category dropdown */}
       <div className="d-flex justify-content-center mb-4">

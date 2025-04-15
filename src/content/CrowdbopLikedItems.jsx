@@ -126,11 +126,6 @@ function CrowdbopLikedItems() {
     return (
         <Container fluid style={{ marginTop: "2rem", maxWidth: "800px" }}>
             <h1 className="text-center mb-4">Your Liked Items</h1>
-            
-            {/* display userID */}
-            <div className="text-center mt-3">
-                <p><b>User ID: {userId}</b></p>
-            </div>
 
             {/* If no liked items exist, show message */}
             {likedItems.map((item, index) => {

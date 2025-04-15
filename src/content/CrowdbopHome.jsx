@@ -10,25 +10,18 @@ const CrowdbopHome = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [designers, setDesigners] = useState([]); // designerNames
+  const [reload, setReload] = useState(false);
+
+
 
   // Trigger animations after component mount
   useEffect(() => {
     const fetchDesigners = async () => {
       try {
-        // Correct path - assumes JSON is in public/assets
         const response = await fetch("src/assets/top_designers.json");
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-
-        if (!data) {
-          throw new Error("No data received");
-        }
-
-        // // Extract just the values (designer names) from the object
+        if (!data) throw new Error("No data received");
         const designerNames = Object.values(data);
         setDesigners(designerNames);
       } catch (err) {
@@ -36,22 +29,12 @@ const CrowdbopHome = () => {
         setError("Failed to load designer data. Please refresh the page.");
       }
     };
-
+  
     fetchDesigners();
-
-    if (!userId) {
-      setShowModal(true);
-    }
     setTimeout(() => setIsAnimated(true), 100);
   }, []);
 
-  // if (isLoading) {
-  //   return <div>Loading designers...</div>;
-  // }
 
-  // if (error) {
-  //   return <div>Error: {error}</div>;
-  // }  
   const colorOptions = [
     'Red', 'Pink', 'Orange', 'Yellow', 'Green', 'Blue', 
     'Purple', 'White', 'Cream', 'Beige', 'Brown', 
@@ -61,7 +44,7 @@ const CrowdbopHome = () => {
 
   const [isNewUser, setIsNewUser] = useState(false);
   const [userDetails, setUserDetails] = useState({
-    gender: "",
+    gender: '',
     preferredDesigner: [],
     age: '',
     priceRange: [],
@@ -112,6 +95,8 @@ const CrowdbopHome = () => {
       if (response.ok) {
         // Successful login (200)
         sessionStorage.setItem("userId", userId);
+        sessionStorage.removeItem("showLoginModal");
+        window.dispatchEvent(new Event("storage"));
         setShowModal(false);
       } else if (response.status === 401) {
         // User not found
@@ -162,6 +147,8 @@ const CrowdbopHome = () => {
         setError(data.message || "A user with this ID already exists");
       } else {
         sessionStorage.setItem("userId", userId);
+        sessionStorage.removeItem("showLoginModal");
+        window.dispatchEvent(new Event("storage"));
         setShowModal(false);
       }
     } catch (err) {
@@ -276,144 +263,17 @@ const CrowdbopHome = () => {
           Your opinions shape our collection.
         </p>
 
-        {/* User ID Modal */}
-        {/* <Modal
-          show={showModal}
-          onHide={() => setShowModal(false)}
-          centered
-          backdrop="static"
-          keyboard={false}
-        >
-          <Modal.Header closeButton={false}>
-            <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
-              {isNewUser ? "Create New Account" : "Enter Your User ID"}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group controlId="userIdInput" className="mb-3">
-                <Form.Label>User ID</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Ex: bbadger"
-                  value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  style={{ fontFamily: "Arial, sans-serif" }}
-                />
-                <Form.Text className="text-muted">
-                  This ID will be used to track your votes.
-                </Form.Text>
-              </Form.Group>
-
-              <Form.Check 
-                type="switch"
-                id="new-user-switch"
-                label="New User?"
-                checked={isNewUser}
-                onChange={handleNewUserToggle}
-                className="mb-3"
-              />
-
-              {isNewUser && (
-                <>
-                  <Form.Group className="mb-3">
-                    <Form.Label>What is your gender?</Form.Label>
-                    <Form.Select 
-                      value={userDetails.gender}
-                      onChange={(e) => handleUserDetailChange('gender', e.target.value)}
-                    >
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </Form.Select>
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    <Form.Label>What is your age?</Form.Label>
-                    <Form.Control
-                      type="number"
-                      min="15"
-                      max="120"
-                      value={userDetails.age}
-                      onChange={(e) => handleUserDetailChange('age', e.target.value)}
-                      placeholder="Enter your age"
-                    />
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    <Form.Label>What is your preferred designer? (Select all that apply)</Form.Label>
-                    <div className="d-flex flex-wrap" style={{ gap: '10px' }}>
-                      {designers.map((designer) => (
-                        <Button
-                          key={designer}
-                          variant={userDetails.preferredDesigner.includes(designer) ? 'secondary' : 'outline-secondary'}
-                          onClick={() => toggleDesignerSelection(designer)}
-                          style={{
-                            borderRadius: '50px',
-                            padding: '8px 12px',
-                            minHeight: '40px', 
-                            flex: '1 0 auto', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            textAlign: 'center',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <span style={{
-                            display: 'inline-block',
-                            maxWidth: '100%',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                          }}>
-                            {designer}
-                          </span>
-                        </Button>
-                      ))}
-                    </div>
-                  </Form.Group>
-                </>
-              )}
-            </Form>
-            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={handleLogin}
-              disabled={isLoading || isNewUser}
-              style={{
-                fontFamily: "'Archivo Black', sans-serif",
-              }}
-            >
-              Login
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleSignup}
-              disabled={isLoading || !isNewUser || !isSignupValid}
-              style={{
-                backgroundColor: "#E85C41",
-                border: "none",
-                fontFamily: "'Archivo Black', sans-serif",
-              }}
-            >
-              Sign Up
-            </Button>
-          </Modal.Footer>
-        </Modal> */}
-
         <Modal
-          show={showModal}
-          onHide={() => setShowModal(false)}
+          show={sessionStorage.getItem("showLoginModal")==="true"}
+          onHide={() => {
+            sessionStorage.removeItem("showLoginModal");
+            setReload(prev => !prev);         
+          }}
           centered
           backdrop="static"
-          keyboard={false}
+          keyboard={true}
         >
-          <Modal.Header closeButton={false}>
+          <Modal.Header closeButton>
             <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
               {isNewUser ? "Create New Account" : "Enter Your User ID"}
             </Modal.Title>
@@ -527,35 +387,51 @@ const CrowdbopHome = () => {
                   </Form.Group>
 
                   {/* Color Preferences Multi-Select */}
-                  <Form.Group className="mb-3">
-                    <Form.Label>What are your preferred colors? (Select all that apply)</Form.Label>
-                    <div className="d-flex flex-column" style={{ gap: '8px' }}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-bold">What are your preferred colors? (Select all that apply)</Form.Label>
+                    <div className="d-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                       {colorOptions.map((color) => {
                         const isDark = ['Black', 'Blue', 'Brown', 'Gray', 'Green', 'Purple', 'Red'].includes(color);
+                        const isSelected = userDetails.colorPreferences.includes(color);
                         return (
-                          <div key={color} className="d-flex align-items-center">
+                          <div 
+                            key={color} 
+                            className="d-flex align-items-center rounded p-2"
+                            style={{
+                              border: isSelected ? '2px solid #EE4A1B' : '1px solid #ccc',
+                              backgroundColor: '#f8f9fa',
+                              transition: 'all 0.2s ease-in-out',
+                              cursor: 'pointer',
+                            }}
+                            onClick={() => toggleColor(color)}
+                          >
+                            <div 
+                              style={{
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: color.toLowerCase(),
+                                border: '1px solid #ddd',
+                                borderRadius: '50%',
+                                marginRight: '12px',
+                                boxShadow: '0 0 3px rgba(0,0,0,0.2)'
+                              }}
+                            />
+                            <span style={{ color: isDark ? '#333' : '#000', flex: 1 }}>{color}</span>
                             <Form.Check
                               type="checkbox"
                               id={`color-${color}`}
-                              checked={userDetails.colorPreferences.includes(color)}
+                              checked={isSelected}
                               onChange={() => toggleColor(color)}
-                              className="me-2"
+                              className="ms-2"
+                              style={{ pointerEvents: 'none' }} // prevents double toggle
                             />
-                            <div 
-                              style={{
-                                width: '20px',
-                                height: '20px',
-                                backgroundColor: color.toLowerCase(),
-                                border: '1px solid #ddd',
-                                marginRight: '10px'
-                              }}
-                            />
-                            <span style={{ color: isDark ? '#333' : '#000' }}>{color}</span>
                           </div>
                         );
                       })}
                     </div>
                   </Form.Group>
+
+
                 </>
               )}
             </Form>
@@ -597,60 +473,6 @@ const CrowdbopHome = () => {
             marginTop: "30px",
           }}
         >
-          {/* <button
-            onClick={() => setShowModal(true)}
-            className="login-button"
-            style={{
-              position: "absolute",
-              top: "20px",
-              right: "20px",
-              backgroundColor: "#fff",
-              color: "#E85C41",
-              border: "2px solid #E85C41",
-              borderRadius: "50px",
-              padding: "8px 20px",
-              fontSize: "1rem",
-              fontWeight: "bold",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "#E85C41";
-              e.currentTarget.style.color = "#fff";
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow =
-                "0 6px 20px rgba(232, 92, 65, 0.4)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "#fff";
-              e.currentTarget.style.color = "#E85C41";
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 14px rgba(232, 92, 65, 0.2)";
-            }}
-          >
-            Log In
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ marginLeft: "8px" }}
-            >
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-              <polyline points="10 17 15 12 10 7"></polyline>
-              <line x1="15" y1="12" x2="3" y2="12"></line>
-            </svg>
-          </button> */}
           <button
             onClick={() => navigate("/voting")}
             className="voting-button"
@@ -705,61 +527,6 @@ const CrowdbopHome = () => {
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </button>
-
-          {/* <button
-            onClick={() => navigate("/liked")}
-            className="voting-button"
-            style={{
-              position: "relative",
-              backgroundColor: "#fff",
-              color: "#E85C41",
-              border: "2px solid #E85C41",
-              borderRadius: "50px",
-              padding: "15px 40px",
-              fontSize: "1.3rem",
-              fontWeight: "bold",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "#E85C41";
-              e.currentTarget.style.color = "#fff";
-              e.currentTarget.style.transform = "translateY(-3px)";
-              e.currentTarget.style.boxShadow =
-                "0 6px 20px rgba(232, 92, 65, 0.4)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "#fff";
-              e.currentTarget.style.color = "#E85C41";
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 14px rgba(232, 92, 65, 0.2)";
-            }}
-          >
-            View Liked Items
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{
-                marginLeft: "10px",
-                animation: "arrowBounce 1s infinite",
-              }}
-            >
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button> */}
           <button
             onClick={() => navigate("/rankings")}
             className="voting-button"
@@ -817,31 +584,6 @@ const CrowdbopHome = () => {
         </div>
       </div>
 
-      {/*userId and logout display*/}
-      {userId && (
-        <Row className="justify-content-center mt-3 mb-3">
-          <Col xs={12} className="text-center mb-2">
-            <p className="mb-0">
-              <strong>User ID: {userId}</strong>
-            </p>
-          </Col>
-          <Col xs="auto" className="text-center">
-            <Button
-              variant="warning"
-              onClick={handleLogout}
-              className="text-white font-weight-bold"
-              style={{
-                backgroundColor: "#EE4A1B",
-                fontWeight: "bold",
-                minWidth: "100px",
-                marginBottom: "40px",
-              }}
-            >
-              Logout
-            </Button>
-          </Col>
-        </Row>
-      )}
 
       {/* How It Works Section */}
       <div

@@ -92,10 +92,10 @@ const CrowdbopRecommended = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <Container className="my-5">
-      <h2 className="mb-4" style={{ fontFamily: "'Archivo Black', sans-serif" }}>
-        Items You Might Like...
-      </h2>
+    <Container>
+      <h1 className="text-center mb-4" style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+        ITEMS YOU MIGHT LIKE...
+      </h1>
       
       <Row xs={1} sm={2} md={3} className="g-4 mb-4">
         {currentItems.map((item) => (

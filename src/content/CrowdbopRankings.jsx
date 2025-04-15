@@ -150,11 +150,11 @@ function CrowdbopRankings() {
 
   return (
     <>
-      <h1 style={{ color: "#E85C41" }}>
+      {/* <h1 style={{ color: "#E85C41" }}>
         <Link to="/" style={{ color: "#E85C41", textDecoration: "none" }}>
           CrowdBop
         </Link>
-      </h1>
+      </h1> */}
       <h1>TOP RANKED PRODUCTS</h1>
 
       <div className="d-flex justify-content-center my-4">
