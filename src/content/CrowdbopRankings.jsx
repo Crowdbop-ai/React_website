@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Col, Container, Row, Button, Pagination } from "react-bootstrap";
 import { FaHeart } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 
 const imgBaseURL = "https://m.media-amazon.com/images/G/01/Shopbop/p";
 const itemBaseURL = "https://www.shopbop.com/";
@@ -10,10 +12,13 @@ function CrowdbopRankings() {
   const [rankingsData, setRankingsData] = useState([]);
   const [page, setPage] = useState(1);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("shoes");
+  const [selectedCategory, setSelectedCategory] = useState(
+    sessionStorage.getItem("selectedCategory") || "shoes"
+  );
   const [showCategories, setShowCategories] = useState(false);
   const [sortBy, setSortBy] = useState("eloRating");
-  const [isLiked, setIsLiked] = useState(new Array(10).fill(0));
+  const [likedItems, setLikedItems] = useState([]);
+  const [userId, setUserId] = useState(sessionStorage.getItem("userId") || "");
 
   const formatCategoryName = (categoryId) => {
     if (!categoryId) return "";
@@ -27,6 +32,8 @@ function CrowdbopRankings() {
     setSelectedCategory(categoryId);
     setShowCategories(false);
     setPage(1);
+    // update session storage
+    sessionStorage.setItem("selectedCategory", categoryId);
   };
 
   useEffect(() => {
@@ -80,19 +87,34 @@ function CrowdbopRankings() {
       }
     };
 
+    // Fetch user's liked products
+    const fetchUserLikes = async () => {
+      try {
+        if (!userId) return;
+        const response = await fetch(
+          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/liked-items?userId=${userId}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const likedSINs = data.likedItems.map((item) => item.ProductSIN);
+          setLikedItems(likedSINs || []);
+        } else {
+          console.error("Failed to fetch liked items");
+        }
+      } catch (error) {
+        console.error("Error fetching user likes:", error);
+      }
+    };
     fetchRankings();
+    fetchUserLikes();
   }, [page, selectedCategory, sortBy]);
 
   const handleNext = () => {
-    setIsLiked(new Array(10).fill(0));
     setPage((p) => p + 1);
   };
   const handlePrev = () => {
-    setIsLiked(new Array(10).fill(0));
     setPage((p) => p - 1);
   };
-
-  const [userId, setUserId] = useState(sessionStorage.getItem("userId") || "");
 
   const handleLike = async (product, index) => {
     if (!userId) {
@@ -101,10 +123,6 @@ function CrowdbopRankings() {
     }
 
     try {
-      console.log(isLiked);
-      const newArray = [...isLiked];
-      newArray[index] = 1;
-      setIsLiked(newArray);
       const response = await fetch(
         "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like",
         {
@@ -124,6 +142,15 @@ function CrowdbopRankings() {
       console.error("Error liking product:", error);
     }
   };
+
+  // Like Button tooltip
+  const renderTooltip = (item, props) => (
+    <Tooltip id="button-tooltip" {...props}>
+      {likedItems.includes(item.ProductSIN)
+        ? "You've already liked this product!"
+        : "Click to add this item to your liked items!"}
+    </Tooltip>
+  );
 
   return (
     <>
@@ -257,21 +284,30 @@ function CrowdbopRankings() {
                       style={{ marginRight: "10px", width: "150px" }}
                     />
                     <div className="d-flex flex-column align-items-start">
-                      <Button
-                        variant="link"
-                        onClick={() => handleLike(item, index)}
-                        style={{
-                          backgroundColor: "white",
-                          borderRadius: "50%",
-                          padding: "4px",
-                          lineHeight: 1,
-                          color: isLiked[index] == 1 ? "#EE4A1B" : "#808080",
-                          marginBottom: "5px",
-                        }}
-                        aria-label={`Like ${item.ProductName}`}
+                      <OverlayTrigger
+                        placement="right"
+                        delay={{ show: 250, hide: 400 }}
+                        overlay={(props) => renderTooltip(item, props)}
                       >
-                        <FaHeart size={24} />
-                      </Button>
+                        <Button
+                          variant="link"
+                          onClick={() => handleLike(item, index)}
+                          style={{
+                            backgroundColor: "white",
+                            borderRadius: "50%",
+                            padding: "4px",
+                            lineHeight: 1,
+                            color:
+                              likedItems.includes(item.ProductSIN) == 1
+                                ? "#EE4A1B"
+                                : "#808080",
+                            marginBottom: "5px",
+                          }}
+                          aria-label={`Like ${item.ProductName}`}
+                        >
+                          <FaHeart size={24} />
+                        </Button>
+                      </OverlayTrigger>
                       <a
                         href={itemBaseURL + item.ProductDetailURL}
                         style={{ color: "black", textDecoration: "none" }}
