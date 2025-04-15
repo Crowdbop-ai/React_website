@@ -65,7 +65,9 @@ function CrowdbopRankings() {
     const fetchRankings = async () => {
       try {
         const response = await fetch(
-          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/leaderboard?category=${selectedCategory}&limit=10&offset=${(page - 1) * 10}&sortBy=${sortBy}`
+          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/leaderboard?category=${selectedCategory}&limit=10&offset=${
+            (page - 1) * 10
+          }&sortBy=${sortBy}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -103,15 +105,18 @@ function CrowdbopRankings() {
       const newArray = [...isLiked];
       newArray[index] = 1;
       setIsLiked(newArray);
-      const response = await fetch("https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          productSIN: product.ProductSIN,
-          categoryId: selectedCategory
-        })
-      });
+      const response = await fetch(
+        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            productSIN: product.ProductSIN,
+            categoryId: selectedCategory,
+          }),
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to like product");
       console.log("Product liked successfully");
@@ -173,7 +178,9 @@ function CrowdbopRankings() {
                     padding: "8px 12px",
                     cursor: "pointer",
                     backgroundColor:
-                      selectedCategory === category.id ? "#f5f5f5" : "transparent",
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent",
                     color: "black",
                   }}
                   onMouseOver={(e) =>
@@ -181,7 +188,9 @@ function CrowdbopRankings() {
                   }
                   onMouseOut={(e) =>
                     (e.currentTarget.style.backgroundColor =
-                      selectedCategory === category.id ? "#f5f5f5" : "transparent")
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent")
                   }
                 >
                   {category.name || formatCategoryName(category.id)}
@@ -204,7 +213,8 @@ function CrowdbopRankings() {
             xs={3}
             style={{
               cursor: "pointer",
-              backgroundColor: sortBy !== "eloRating" ? "#FFE5DC" : "transparent",
+              backgroundColor:
+                sortBy !== "eloRating" ? "#FFE5DC" : "transparent",
             }}
             onClick={() => {
               setSortBy("wins");
@@ -217,7 +227,8 @@ function CrowdbopRankings() {
             xs={3}
             style={{
               cursor: "pointer",
-              backgroundColor: sortBy === "eloRating" ? "#FFE5DC" : "transparent",
+              backgroundColor:
+                sortBy === "eloRating" ? "#FFE5DC" : "transparent",
             }}
             onClick={() => {
               setSortBy("eloRating");
@@ -255,7 +266,7 @@ function CrowdbopRankings() {
                           padding: "4px",
                           lineHeight: 1,
                           color: isLiked[index] == 1 ? "#EE4A1B" : "#808080",
-                          marginBottom: "5px"
+                          marginBottom: "5px",
                         }}
                         aria-label={`Like ${item.ProductName}`}
                       >
@@ -273,14 +284,20 @@ function CrowdbopRankings() {
                 <Col
                   xs={3}
                   className="d-flex align-items-center justify-content-center"
-                  style={{ backgroundColor: sortBy !== "eloRating" ? "#FFF4EE" : "transparent" }}
+                  style={{
+                    backgroundColor:
+                      sortBy !== "eloRating" ? "#FFF4EE" : "transparent",
+                  }}
                 >
                   <h3 className="text-center">{item.Wins}</h3>
                 </Col>
                 <Col
                   xs={3}
                   className="d-flex align-items-center justify-content-center"
-                  style={{ backgroundColor: sortBy === "eloRating" ? "#FFF4EE" : "transparent" }}
+                  style={{
+                    backgroundColor:
+                      sortBy === "eloRating" ? "#FFF4EE" : "transparent",
+                  }}
                 >
                   <h3 className="text-center">{item.EloRating}</h3>
                 </Col>

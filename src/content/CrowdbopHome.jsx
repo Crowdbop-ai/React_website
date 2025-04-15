@@ -1,34 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap";
+import {
+  Modal,
+  Button,
+  Form,
+  Row,
+  Col,
+  Alert,
+  Container,
+  Card,
+} from "react-bootstrap";
+import "../CrowdbopHome.css"; // We'll create this custom CSS file
 
 const CrowdbopHome = () => {
   const [isAnimated, setIsAnimated] = useState(false);
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false); // Control modal visibility
-  const [userId, setUserId] = useState(sessionStorage.getItem("userId") || ""); // Get userId from session storage if it exists
+  const [showModal, setShowModal] = useState(false);
+  const [userId, setUserId] = useState(sessionStorage.getItem("userId") || "");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [designers, setDesigners] = useState([]); // designerNames
+  const [designers, setDesigners] = useState([]);
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [userDetails, setUserDetails] = useState({
+    gender: "",
+    preferredDesigner: [],
+    age: "",
+  });
 
-  // Trigger animations after component mount
+  // Fetch designers
   useEffect(() => {
     const fetchDesigners = async () => {
       try {
-        // Correct path - assumes JSON is in public/assets
         const response = await fetch("src/assets/top_designers.json");
-
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const data = await response.json();
-
         if (!data) {
           throw new Error("No data received");
         }
-
-        // // Extract just the values (designer names) from the object
         const designerNames = Object.values(data);
         setDesigners(designerNames);
       } catch (err) {
@@ -45,26 +55,11 @@ const CrowdbopHome = () => {
     setTimeout(() => setIsAnimated(true), 100);
   }, []);
 
-  // if (isLoading) {
-  //   return <div>Loading designers...</div>;
-  // }
-
-  // if (error) {
-  //   return <div>Error: {error}</div>;
-  // }
-
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [userDetails, setUserDetails] = useState({
-    gender: "",
-    preferredDesigner: [],
-    age: "",
-  });
-
   const handleNewUserToggle = () => {
     setIsNewUser(!isNewUser);
     setUserDetails({
       gender: "",
-      preferredDesigner: "",
+      preferredDesigner: [],
       age: "",
     });
   };
@@ -79,7 +74,7 @@ const CrowdbopHome = () => {
   const isSignupValid =
     userId.trim() &&
     userDetails.gender &&
-    userDetails.preferredDesigner &&
+    userDetails.preferredDesigner.length > 0 &&
     userDetails.age;
 
   const handleLogin = async () => {
@@ -104,14 +99,11 @@ const CrowdbopHome = () => {
       );
 
       if (response.ok) {
-        // Successful login (200)
         sessionStorage.setItem("userId", userId);
         setShowModal(false);
       } else if (response.status === 401) {
-        // User not found
         setError("User not found. Please sign up first.");
       } else {
-        // Other error
         setError("An error occurred. Please try again.");
       }
     } catch (err) {
@@ -159,14 +151,12 @@ const CrowdbopHome = () => {
     }
   };
 
-  // Handle logout
   const handleLogout = () => {
-    sessionStorage.removeItem("userId"); // Remove userId from session storage
-    setUserId(""); // Clear userId from state
+    sessionStorage.removeItem("userId");
+    setUserId("");
     setShowModal(true);
   };
 
-  //designer selection
   const toggleDesignerSelection = (designer) => {
     setUserDetails((prev) => {
       const currentDesigners = prev.preferredDesigner;
@@ -185,46 +175,18 @@ const CrowdbopHome = () => {
   };
 
   return (
-    <div
-      className="crowdbop-container"
-      style={{
-        maxWidth: "1100px",
-        margin: "0 auto",
-        padding: "20px",
-        fontFamily: "'Archivo Black', sans-serif",
-      }}
-    >
+    <Container className="crowdbop-container py-4">
       {/* Header Section */}
       <div
-        className="header-section"
-        style={{
-          textAlign: "center",
-          marginBottom: "60px",
-          opacity: isAnimated ? 1 : 0,
-          transform: isAnimated ? "translateY(0)" : "translateY(-20px)",
-          transition: "opacity 0.7s ease, transform 0.7s ease",
-        }}
+        className={`header-section text-center mb-5 ${
+          isAnimated ? "animated" : ""
+        }`}
       >
-        <h1
-          style={{
-            fontSize: "3.5rem",
-            marginBottom: "20px",
-            color: "#333",
-          }}
-        >
-          Welcome to <span style={{ color: "#E85C41" }}>CrowdBop</span>
+        <h1 className="display-4 mb-3">
+          Welcome to <span className="text-primary">CrowdBop</span>
         </h1>
 
-        <p
-          style={{
-            fontSize: "1.2rem",
-            maxWidth: "700px",
-            margin: "0 auto 40px",
-            lineHeight: "1.6",
-            color: "#555",
-            fontFamily: "Arial, sans-serif",
-          }}
-        >
+        <p className="lead mb-5 mx-auto crowdbop-intro">
           Help us discover the most popular items by voting on your favorites!
           Your opinions shape our collection.
         </p>
@@ -238,7 +200,7 @@ const CrowdbopHome = () => {
           keyboard={false}
         >
           <Modal.Header closeButton={false}>
-            <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+            <Modal.Title className="crowdbop-font">
               {isNewUser ? "Create New Account" : "Enter Your User ID"}
             </Modal.Title>
           </Modal.Header>
@@ -251,7 +213,6 @@ const CrowdbopHome = () => {
                   placeholder="Ex: bbadger"
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
-                  style={{ fontFamily: "Arial, sans-serif" }}
                 />
                 <Form.Text className="text-muted">
                   This ID will be used to track your votes.
@@ -302,7 +263,7 @@ const CrowdbopHome = () => {
                     <Form.Label>
                       What is your preferred designer? (Select all that apply)
                     </Form.Label>
-                    <div className="d-flex flex-wrap" style={{ gap: "10px" }}>
+                    <div className="d-flex flex-wrap gap-2">
                       {designers.map((designer) => (
                         <Button
                           key={designer}
@@ -312,30 +273,9 @@ const CrowdbopHome = () => {
                               : "outline-secondary"
                           }
                           onClick={() => toggleDesignerSelection(designer)}
-                          style={{
-                            borderRadius: "50px",
-                            padding: "8px 12px",
-                            minHeight: "40px",
-                            flex: "1 0 auto",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            textAlign: "center",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
+                          className="designer-button"
                         >
-                          <span
-                            style={{
-                              display: "inline-block",
-                              maxWidth: "100%",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {designer}
-                          </span>
+                          <span className="designer-name">{designer}</span>
                         </Button>
                       ))}
                     </div>
@@ -354,9 +294,7 @@ const CrowdbopHome = () => {
               variant="secondary"
               onClick={handleLogin}
               disabled={isLoading || isNewUser}
-              style={{
-                fontFamily: "'Archivo Black', sans-serif",
-              }}
+              className="crowdbop-font"
             >
               Login
             </Button>
@@ -364,115 +302,19 @@ const CrowdbopHome = () => {
               variant="primary"
               onClick={handleSignup}
               disabled={isLoading || !isNewUser || !isSignupValid}
-              style={{
-                backgroundColor: "#E85C41",
-                border: "none",
-                fontFamily: "'Archivo Black', sans-serif",
-              }}
+              className="crowdbop-font crowdbop-button"
             >
               {isLoading ? "Signing Up..." : "Sign Up"}
             </Button>
           </Modal.Footer>
         </Modal>
-        {/* Custom Button */}
-        {/* Buttons Container (Stacked Vertically) */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "20px", // Spacing between buttons
-            marginTop: "30px",
-          }}
-        >
-          {/* <button
-            onClick={() => setShowModal(true)}
-            className="login-button"
-            style={{
-              position: "absolute",
-              top: "20px",
-              right: "20px",
-              backgroundColor: "#fff",
-              color: "#E85C41",
-              border: "2px solid #E85C41",
-              borderRadius: "50px",
-              padding: "8px 20px",
-              fontSize: "1rem",
-              fontWeight: "bold",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "#E85C41";
-              e.currentTarget.style.color = "#fff";
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow =
-                "0 6px 20px rgba(232, 92, 65, 0.4)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "#fff";
-              e.currentTarget.style.color = "#E85C41";
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 14px rgba(232, 92, 65, 0.2)";
-            }}
-          >
-            Log In
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ marginLeft: "8px" }}
-            >
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-              <polyline points="10 17 15 12 10 7"></polyline>
-              <line x1="15" y1="12" x2="3" y2="12"></line>
-            </svg>
-          </button> */}
-          <button
+
+        {/* Action Buttons */}
+        <div className="d-flex flex-column align-items-center gap-4 mt-4">
+          <Button
+            variant="outline-primary"
+            className="crowdbop-action-button"
             onClick={() => navigate("/voting")}
-            className="voting-button"
-            style={{
-              position: "relative",
-              backgroundColor: "#fff",
-              color: "#E85C41",
-              border: "2px solid #E85C41",
-              borderRadius: "50px",
-              padding: "15px 40px",
-              fontSize: "1.3rem",
-              fontWeight: "bold",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "#E85C41";
-              e.currentTarget.style.color = "#fff";
-              e.currentTarget.style.transform = "translateY(-3px)";
-              e.currentTarget.style.boxShadow =
-                "0 6px 20px rgba(232, 92, 65, 0.4)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "#fff";
-              e.currentTarget.style.color = "#E85C41";
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 14px rgba(232, 92, 65, 0.2)";
-            }}
           >
             Start Voting Now
             <svg
@@ -484,50 +326,17 @@ const CrowdbopHome = () => {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              style={{
-                marginLeft: "10px",
-                animation: "arrowBounce 1s infinite",
-              }}
+              className="ms-2 arrow-animation"
             >
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
-          </button>
+          </Button>
 
-          {/* <button
+          <Button
+            variant="outline-primary"
+            className="crowdbop-action-button"
             onClick={() => navigate("/liked")}
-            className="voting-button"
-            style={{
-              position: "relative",
-              backgroundColor: "#fff",
-              color: "#E85C41",
-              border: "2px solid #E85C41",
-              borderRadius: "50px",
-              padding: "15px 40px",
-              fontSize: "1.3rem",
-              fontWeight: "bold",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "#E85C41";
-              e.currentTarget.style.color = "#fff";
-              e.currentTarget.style.transform = "translateY(-3px)";
-              e.currentTarget.style.boxShadow =
-                "0 6px 20px rgba(232, 92, 65, 0.4)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "#fff";
-              e.currentTarget.style.color = "#E85C41";
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 14px rgba(232, 92, 65, 0.2)";
-            }}
           >
             View Liked Items
             <svg
@@ -539,49 +348,17 @@ const CrowdbopHome = () => {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              style={{
-                marginLeft: "10px",
-                animation: "arrowBounce 1s infinite",
-              }}
+              className="ms-2 arrow-animation"
             >
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
-          </button> */}
-          <button
+          </Button>
+
+          <Button
+            variant="outline-primary"
+            className="crowdbop-action-button"
             onClick={() => navigate("/rankings")}
-            className="voting-button"
-            style={{
-              position: "relative",
-              backgroundColor: "#fff",
-              color: "#E85C41",
-              border: "2px solid #E85C41",
-              borderRadius: "50px",
-              padding: "15px 40px",
-              fontSize: "1.3rem",
-              fontWeight: "bold",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              boxShadow: "0 4px 14px rgba(232, 92, 65, 0.2)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "#E85C41";
-              e.currentTarget.style.color = "#fff";
-              e.currentTarget.style.transform = "translateY(-3px)";
-              e.currentTarget.style.boxShadow =
-                "0 6px 20px rgba(232, 92, 65, 0.4)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "#fff";
-              e.currentTarget.style.color = "#E85C41";
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 14px rgba(232, 92, 65, 0.2)";
-            }}
           >
             Skip to Leaderboard
             <svg
@@ -593,21 +370,18 @@ const CrowdbopHome = () => {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              style={{
-                marginLeft: "10px",
-                animation: "arrowBounce 1s infinite",
-              }}
+              className="ms-2 arrow-animation"
             >
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/*userId and logout display*/}
+      {/* User ID and Logout Display */}
       {userId && (
-        <Row className="justify-content-center mt-3 mb-3">
+        <Row className="justify-content-center mt-3 mb-5">
           <Col xs={12} className="text-center mb-2">
             <p className="mb-0">
               <strong>User ID: {userId}</strong>
@@ -617,13 +391,7 @@ const CrowdbopHome = () => {
             <Button
               variant="warning"
               onClick={handleLogout}
-              className="text-white font-weight-bold"
-              style={{
-                backgroundColor: "#EE4A1B",
-                fontWeight: "bold",
-                minWidth: "100px",
-                marginBottom: "40px",
-              }}
+              className="fw-bold text-white crowdbop-logout-btn"
             >
               Logout
             </Button>
@@ -632,434 +400,113 @@ const CrowdbopHome = () => {
       )}
 
       {/* How It Works Section */}
-      <div
-        className="how-it-works-section"
-        style={{
-          backgroundColor: "#fff",
-          borderRadius: "12px",
-          padding: "30px",
-          boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
-          opacity: isAnimated ? 1 : 0,
-          transform: isAnimated ? "translateY(0)" : "translateY(20px)",
-          transition: "opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s",
-        }}
+      <Card
+        className={`how-it-works-section shadow ${
+          isAnimated ? "animated-delay" : ""
+        }`}
       >
-        <h2
-          style={{
-            textAlign: "center",
-            marginBottom: "30px",
-            color: "#333",
-            position: "relative",
-            paddingBottom: "10px",
-          }}
-        >
-          How It Works
-          <div
-            style={{
-              content: '""',
-              position: "absolute",
-              bottom: "0",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "80px",
-              height: "3px",
-              backgroundColor: "#E85C41",
-            }}
-          ></div>
-        </h2>
+        <Card.Body className="p-4">
+          <h2 className="text-center mb-4 section-title position-relative">
+            How It Works
+          </h2>
 
-        <div
-          className="steps-container"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-            gap: "20px",
-            margin: "0 auto",
-          }}
-        >
-          {/* Step 1 */}
-          <div
-            className="step-card"
-            style={{
-              padding: "20px",
-              backgroundColor: "#fafafa",
-              borderRadius: "8px",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
-              transition: "transform 0.3s ease, box-shadow 0.3s ease",
-              cursor: "default",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateY(-5px)";
-              e.currentTarget.style.boxShadow = "0 8px 15px rgba(0,0,0,0.1)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "15px",
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: "#E85C41",
-                  color: "#fff",
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: "12px",
-                  fontWeight: "bold",
-                  fontSize: "18px",
-                }}
-              >
-                1
-              </div>
-              <h3
-                style={{
-                  margin: "0",
-                  fontSize: "1.1rem",
-                  fontWeight: "bold",
-                  color: "#333",
-                }}
-              >
-                Vote on Pairs
-              </h3>
-            </div>
-            <p
-              style={{
-                margin: "0",
-                color: "#666",
-                fontFamily: "Arial, sans-serif",
-                fontSize: "0.95rem",
-                lineHeight: "1.5",
-              }}
-            >
-              Choose between pairs of products from ShopBop's catalog
-            </p>
-          </div>
+          <Row xs={1} md={2} lg={3} className="g-4">
+            {/* Step 1 */}
+            <Col>
+              <Card className="step-card h-100">
+                <Card.Body>
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="step-number me-3">1</div>
+                    <h3 className="step-title m-0">Vote on Pairs</h3>
+                  </div>
+                  <Card.Text className="step-text">
+                    Choose between pairs of products from ShopBop's catalog
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
 
-          {/* Step 2 */}
-          <div
-            className="step-card"
-            style={{
-              padding: "20px",
-              backgroundColor: "#fafafa",
-              borderRadius: "8px",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
-              transition: "transform 0.3s ease, box-shadow 0.3s ease",
-              cursor: "default",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateY(-5px)";
-              e.currentTarget.style.boxShadow = "0 8px 15px rgba(0,0,0,0.1)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "15px",
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: "#E85C41",
-                  color: "#fff",
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: "12px",
-                  fontWeight: "bold",
-                  fontSize: "18px",
-                }}
-              >
-                2
-              </div>
-              <h3
-                style={{
-                  margin: "0",
-                  fontSize: "1.1rem",
-                  fontWeight: "bold",
-                  color: "#333",
-                }}
-              >
-                Track Popularity
-              </h3>
-            </div>
-            <p
-              style={{
-                margin: "0",
-                color: "#666",
-                fontFamily: "Arial, sans-serif",
-                fontSize: "0.95rem",
-                lineHeight: "1.5",
-              }}
-            >
-              Each vote helps us determine which products are most popular
-            </p>
-          </div>
+            {/* Step 2 */}
+            <Col>
+              <Card className="step-card h-100">
+                <Card.Body>
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="step-number me-3">2</div>
+                    <h3 className="step-title m-0">Track Popularity</h3>
+                  </div>
+                  <Card.Text className="step-text">
+                    Each vote helps us determine which products are most popular
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
 
-          {/* Step 3 */}
-          <div
-            className="step-card"
-            style={{
-              padding: "20px",
-              backgroundColor: "#fafafa",
-              borderRadius: "8px",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
-              transition: "transform 0.3s ease, box-shadow 0.3s ease",
-              cursor: "default",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateY(-5px)";
-              e.currentTarget.style.boxShadow = "0 8px 15px rgba(0,0,0,0.1)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "15px",
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: "#E85C41",
-                  color: "#fff",
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: "12px",
-                  fontWeight: "bold",
-                  fontSize: "18px",
-                }}
-              >
-                3
-              </div>
-              <h3
-                style={{
-                  margin: "0",
-                  fontSize: "1.1rem",
-                  fontWeight: "bold",
-                  color: "#333",
-                }}
-              >
-                View Trends
-              </h3>
-            </div>
-            <p
-              style={{
-                margin: "0",
-                color: "#666",
-                fontFamily: "Arial, sans-serif",
-                fontSize: "0.95rem",
-                lineHeight: "1.5",
-              }}
-            >
-              See rankings to discover which items are trending
-            </p>
-          </div>
+            {/* Step 3 */}
+            <Col>
+              <Card className="step-card h-100">
+                <Card.Body>
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="step-number me-3">3</div>
+                    <h3 className="step-title m-0">View Trends</h3>
+                  </div>
+                  <Card.Text className="step-text">
+                    See rankings to discover which items are trending
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
 
-          {/* Step 4 */}
-          <div
-            className="step-card"
-            style={{
-              padding: "20px",
-              backgroundColor: "#fafafa",
-              borderRadius: "8px",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
-              transition: "transform 0.3s ease, box-shadow 0.3s ease",
-              cursor: "default",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateY(-5px)";
-              e.currentTarget.style.boxShadow = "0 8px 15px rgba(0,0,0,0.1)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "15px",
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: "#E85C41",
-                  color: "#fff",
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: "12px",
-                  fontWeight: "bold",
-                  fontSize: "18px",
-                }}
-              >
-                4
-              </div>
-              <h3
-                style={{
-                  margin: "0",
-                  fontSize: "1.1rem",
-                  fontWeight: "bold",
-                  color: "#333",
-                }}
-              >
-                Discover New Items
-              </h3>
-            </div>
-            <p
-              style={{
-                margin: "0",
-                color: "#666",
-                fontFamily: "Arial, sans-serif",
-                fontSize: "0.95rem",
-                lineHeight: "1.5",
-              }}
-            >
-              Find new favorites you might have missed
-            </p>
-          </div>
+            {/* Step 4 */}
+            <Col>
+              <Card className="step-card h-100">
+                <Card.Body>
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="step-number me-3">4</div>
+                    <h3 className="step-title m-0">Discover New Items</h3>
+                  </div>
+                  <Card.Text className="step-text">
+                    Find new favorites you might have missed
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
 
-          {/* Step 5 */}
-          <div
-            className="step-card"
-            style={{
-              padding: "20px",
-              backgroundColor: "#fafafa",
-              borderRadius: "8px",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
-              transition: "transform 0.3s ease, box-shadow 0.3s ease",
-              cursor: "default",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateY(-5px)";
-              e.currentTarget.style.boxShadow = "0 8px 15px rgba(0,0,0,0.1)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "15px",
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: "#E85C41",
-                  color: "#fff",
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: "12px",
-                  fontWeight: "bold",
-                  fontSize: "18px",
-                }}
-              >
-                5
-              </div>
-              <h3
-                style={{
-                  margin: "0",
-                  fontSize: "1.1rem",
-                  fontWeight: "bold",
-                  color: "#333",
-                }}
-              >
-                ELO Ranking System
-              </h3>
-            </div>
-            <p
-              style={{
-                margin: "0",
-                color: "#666",
-                fontFamily: "Arial, sans-serif",
-                fontSize: "0.95rem",
-                lineHeight: "1.5",
-              }}
-            >
-              Our leaderboard uses the ELO system from chess - items gain or
-              lose points based on their rank and who they beat, creating a
-              dynamic ranking that evolves with each vote.
-            </p>
-          </div>
-        </div>
-      </div>
+            {/* Step 5 */}
+            <Col>
+              <Card className="step-card h-100">
+                <Card.Body>
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="step-number me-3">5</div>
+                    <h3 className="step-title m-0">ELO Ranking System</h3>
+                  </div>
+                  <Card.Text className="step-text">
+                    Our leaderboard uses the ELO system from chess - items gain
+                    or lose points based on their rank and who they beat,
+                    creating a dynamic ranking that evolves with each vote.
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
 
-      {/* Optional: Background decoration */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          zIndex: -1,
-          pointerEvents: "none",
-          opacity: 0.05,
-        }}
-      >
+      {/* Background decoration remains as is but could be moved to CSS */}
+      <div className="background-decoration">
         {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
+            className="decoration-dot"
             style={{
-              position: "absolute",
-              width: `${Math.random() * 8 + 2}px`,
-              height: `${Math.random() * 8 + 2}px`,
-              backgroundColor: "#E85C41",
-              borderRadius: "50%",
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
+              width: `${Math.random() * 8 + 2}px`,
+              height: `${Math.random() * 8 + 2}px`,
             }}
           />
         ))}
       </div>
-
-      {/* Animation keyframes */}
-      <style>
-        {`
-          @keyframes arrowBounce {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(5px); }
-          }
-        `}
-      </style>
-    </div>
+    </Container>
   );
 };
 
