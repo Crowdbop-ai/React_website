@@ -12,14 +12,13 @@ const CrowdbopHome = () => {
   const [designers, setDesigners] = useState([]); // designerNames
   const [reload, setReload] = useState(false);
 
-
-
   // Trigger animations after component mount
   useEffect(() => {
     const fetchDesigners = async () => {
       try {
         const response = await fetch("src/assets/top_designers.json");
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         if (!data) throw new Error("No data received");
         const designerNames = Object.values(data);
@@ -29,36 +28,50 @@ const CrowdbopHome = () => {
         setError("Failed to load designer data. Please refresh the page.");
       }
     };
-  
+
     fetchDesigners();
     setTimeout(() => setIsAnimated(true), 100);
   }, []);
 
-
   const colorOptions = [
-    'Red', 'Pink', 'Orange', 'Yellow', 'Green', 'Blue', 
-    'Purple', 'White', 'Cream', 'Beige', 'Brown', 
-    'Black', 'Gray', 'Silver', 'Gold', 'Metallic', 
-    'Transparent', 'Multicolor', 'Other'
+    "Red",
+    "Pink",
+    "Orange",
+    "Yellow",
+    "Green",
+    "Blue",
+    "Purple",
+    "White",
+    "Cream",
+    "Beige",
+    "Brown",
+    "Black",
+    "Gray",
+    "Silver",
+    "Gold",
+    "Metallic",
+    "Transparent",
+    "Multicolor",
+    "Other",
   ];
 
   const [isNewUser, setIsNewUser] = useState(false);
   const [userDetails, setUserDetails] = useState({
-    gender: '',
+    gender: "",
     preferredDesigner: [],
-    age: '',
+    age: "",
     priceRange: [],
-    colorPreferences: []
+    colorPreferences: [],
   });
 
   const handleNewUserToggle = () => {
     setIsNewUser(!isNewUser);
     setUserDetails({
-      gender: '',
+      gender: "",
       preferredDesigner: [],
-      age: '',
+      age: "",
       priceRange: [],
-      colorPreferences: []
+      colorPreferences: [],
     });
   };
 
@@ -68,7 +81,7 @@ const CrowdbopHome = () => {
       [field]: value,
     }));
   };
-  
+
   const isSignupValid = userId.trim();
 
   const handleLogin = async () => {
@@ -131,12 +144,12 @@ const CrowdbopHome = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-             userId: userId.trim(),
-             gender: userDetails.gender,
-             age: userDetails.age,
-             preferredDesigners: userDetails.preferredDesigner,
-             priceRangePreference: userDetails.priceRange,
-             colorPreferences: userDetails.colorPreferences
+            userId: userId.trim(),
+            gender: userDetails.gender,
+            age: userDetails.age,
+            preferredDesigners: userDetails.preferredDesigner,
+            priceRangePreference: userDetails.priceRange,
+            colorPreferences: userDetails.colorPreferences,
           }),
         }
       );
@@ -178,41 +191,41 @@ const CrowdbopHome = () => {
       } else {
         return {
           ...prev,
-          preferredDesigner: [...currentDesigners, designer]
+          preferredDesigner: [...currentDesigners, designer],
         };
       }
     });
   };
 
   const togglePriceRange = (range) => {
-    setUserDetails(prev => {
+    setUserDetails((prev) => {
       const currentRanges = prev.priceRange;
       if (currentRanges.includes(range)) {
         return {
           ...prev,
-          priceRange: currentRanges.filter(r => r !== range)
+          priceRange: currentRanges.filter((r) => r !== range),
         };
       } else {
         return {
           ...prev,
-          priceRange: [...currentRanges, range]
+          priceRange: [...currentRanges, range],
         };
       }
     });
   };
-  
+
   const toggleColor = (color) => {
-    setUserDetails(prev => {
+    setUserDetails((prev) => {
       const currentColors = prev.colorPreferences;
       if (currentColors.includes(color)) {
         return {
           ...prev,
-          colorPreferences: currentColors.filter(c => c !== color)
+          colorPreferences: currentColors.filter((c) => c !== color),
         };
       } else {
         return {
           ...prev,
-          colorPreferences: [...currentColors, color]
+          colorPreferences: [...currentColors, color],
         };
       }
     });
@@ -264,10 +277,10 @@ const CrowdbopHome = () => {
         </p>
 
         <Modal
-          show={sessionStorage.getItem("showLoginModal")==="true"}
+          show={sessionStorage.getItem("showLoginModal") === "true"}
           onHide={() => {
             sessionStorage.removeItem("showLoginModal");
-            setReload(prev => !prev);         
+            setReload((prev) => !prev);
           }}
           centered
           backdrop="static"
@@ -294,7 +307,7 @@ const CrowdbopHome = () => {
                 </Form.Text>
               </Form.Group>
 
-              <Form.Check 
+              <Form.Check
                 type="switch"
                 id="new-user-switch"
                 label="New User?"
@@ -307,9 +320,11 @@ const CrowdbopHome = () => {
                 <>
                   <Form.Group className="mb-3">
                     <Form.Label>What is your gender?</Form.Label>
-                    <Form.Select 
+                    <Form.Select
                       value={userDetails.gender}
-                      onChange={(e) => handleUserDetailChange('gender', e.target.value)}
+                      onChange={(e) =>
+                        handleUserDetailChange("gender", e.target.value)
+                      }
                     >
                       <option value="">Select gender</option>
                       <option value="male">Male</option>
@@ -325,39 +340,49 @@ const CrowdbopHome = () => {
                       min="15"
                       max="120"
                       value={userDetails.age}
-                      onChange={(e) => handleUserDetailChange('age', e.target.value)}
+                      onChange={(e) =>
+                        handleUserDetailChange("age", e.target.value)
+                      }
                       placeholder="Enter your age"
                     />
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label>What is your preferred designer? (Select all that apply)</Form.Label>
-                    <div className="d-flex flex-wrap" style={{ gap: '10px' }}>
+                    <Form.Label>
+                      What is your preferred designer? (Select all that apply)
+                    </Form.Label>
+                    <div className="d-flex flex-wrap" style={{ gap: "10px" }}>
                       {designers.map((designer) => (
                         <Button
                           key={designer}
-                          variant={userDetails.preferredDesigner.includes(designer) ? 'secondary' : 'outline-secondary'}
+                          variant={
+                            userDetails.preferredDesigner.includes(designer)
+                              ? "secondary"
+                              : "outline-secondary"
+                          }
                           onClick={() => toggleDesignerSelection(designer)}
                           style={{
-                            borderRadius: '50px',
-                            padding: '8px 12px',
-                            minHeight: '40px', 
-                            flex: '1 0 auto', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            textAlign: 'center',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            borderRadius: "50px",
+                            padding: "8px 12px",
+                            minHeight: "40px",
+                            flex: "1 0 auto",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            textAlign: "center",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          <span style={{
-                            display: 'inline-block',
-                            maxWidth: '100%',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                          }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              maxWidth: "100%",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
                             {designer}
                           </span>
                         </Button>
@@ -366,20 +391,28 @@ const CrowdbopHome = () => {
                   </Form.Group>
                   {/* Price Range Multi-Select */}
                   <Form.Group className="mb-3">
-                    <Form.Label>What are your preferred price ranges? (Select all that apply)</Form.Label>
-                    <div className="d-flex flex-column" style={{ gap: '8px' }}>
-                      {['Budget: Under $50', 'Affordable: $50 – $150', 'Mid-Range: $150 – $500', 
-                        'Premium: $500 – $1000', 'Luxury: $1000+'].map((range) => {
-                        const value = range.split(':')[0].toLowerCase().trim();
+                    <Form.Label>
+                      What are your preferred price ranges? (Select all that
+                      apply)
+                    </Form.Label>
+                    <div className="d-flex flex-column" style={{ gap: "8px" }}>
+                      {[
+                        "Budget: Under $50",
+                        "Affordable: $50 – $150",
+                        "Mid-Range: $150 – $500",
+                        "Premium: $500 – $1000",
+                        "Luxury: $1000+",
+                      ].map((range) => {
+                        const value = range.split(":")[0].toLowerCase().trim();
                         return (
-                          <Form.Check 
+                          <Form.Check
                             key={value}
                             type="checkbox"
                             id={`price-${value}`}
                             label={range}
                             checked={userDetails.priceRange.includes(value)}
                             onChange={() => togglePriceRange(value)}
-                            style={{"accentColor": "black", color:"black"}}
+                            style={{ accentColor: "black", color: "black" }}
                           />
                         );
                       })}
@@ -388,39 +421,62 @@ const CrowdbopHome = () => {
 
                   {/* Color Preferences Multi-Select */}
                   <Form.Group className="mb-4">
-                    <Form.Label className="fw-bold">What are your preferred colors? (Select all that apply)</Form.Label>
-                    <div className="d-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                    <Form.Label className="fw-bold">
+                      What are your preferred colors? (Select all that apply)
+                    </Form.Label>
+                    <div
+                      className="d-grid"
+                      style={{
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        gap: "16px",
+                      }}
+                    >
                       {colorOptions.map((color) => {
-                        const isDark = ['Black', 'Blue', 'Brown', 'Gray', 'Green', 'Purple', 'Red'].includes(color);
-                        const isSelected = userDetails.colorPreferences.includes(color);
+                        const isDark = [
+                          "Black",
+                          "Blue",
+                          "Brown",
+                          "Gray",
+                          "Green",
+                          "Purple",
+                          "Red",
+                        ].includes(color);
+                        const isSelected =
+                          userDetails.colorPreferences.includes(color);
                         return (
-                          <div 
-                            key={color} 
+                          <div
+                            key={color}
                             className="d-flex align-items-center rounded p-2"
                             style={{
-                              border: isSelected ? '1px solid #EE4A1B' : '1px solid #ccc',
-                              backgroundColor: isSelected ? '#FFF4EE' : '#f8f9fa',
-                              transition: 'all 0.2s ease-in-out',
-                              cursor: 'pointer',
+                              border: isSelected
+                                ? "1px solid #EE4A1B"
+                                : "1px solid #ccc",
+                              backgroundColor: isSelected
+                                ? "#FFF4EE"
+                                : "#f8f9fa",
+                              transition: "all 0.2s ease-in-out",
+                              cursor: "pointer",
                             }}
                             onClick={() => toggleColor(color)}
                           >
-                            <div 
+                            <div
                               style={{
-                                width: '24px',
-                                height: '24px',
+                                width: "24px",
+                                height: "24px",
                                 backgroundColor: color.toLowerCase(),
-                                border: '1px solid #ddd',
-                                borderRadius: '50%',
-                                marginRight: '12px',
-                                boxShadow: '0 0 3px rgba(0,0,0,0.2)'
+                                border: "1px solid #ddd",
+                                borderRadius: "50%",
+                                marginRight: "12px",
+                                boxShadow: "0 0 3px rgba(0,0,0,0.2)",
                               }}
                             />
-                            <span style={{ 
-                              color: isDark ? '#333' : '#000', 
-                              flex: 1,
-                              fontWeight: isSelected ? 'bold' : 'normal'
-                            }}>
+                            <span
+                              style={{
+                                color: isDark ? "#333" : "#000",
+                                flex: 1,
+                                fontWeight: isSelected ? "bold" : "normal",
+                              }}
+                            >
                               {color}
                             </span>
                           </div>
@@ -428,12 +484,14 @@ const CrowdbopHome = () => {
                       })}
                     </div>
                   </Form.Group>
-
-
                 </>
               )}
             </Form>
-            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+            {error && (
+              <Alert variant="danger" className="mt-3">
+                {error}
+              </Alert>
+            )}
           </Modal.Body>
           <Modal.Footer>
             <Button
@@ -581,7 +639,6 @@ const CrowdbopHome = () => {
           </button>
         </div>
       </div>
-
 
       {/* How It Works Section */}
       <div
@@ -968,6 +1025,77 @@ const CrowdbopHome = () => {
               Our leaderboard uses the ELO system from chess - items gain or
               lose points based on their rank and who they beat, creating a
               dynamic ranking that evolves with each vote.
+            </p>
+          </div>
+
+          {/* Step 4 */}
+          <div
+            className="step-card"
+            style={{
+              padding: "20px",
+              backgroundColor: "#fafafa",
+              borderRadius: "8px",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              cursor: "default",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "translateY(-5px)";
+              e.currentTarget.style.boxShadow = "0 8px 15px rgba(0,0,0,0.1)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.05)";
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "15px",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#E85C41",
+                  color: "#fff",
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: "12px",
+                  fontWeight: "bold",
+                  fontSize: "18px",
+                }}
+              >
+                4
+              </div>
+              <h3
+                style={{
+                  margin: "0",
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  color: "#333",
+                }}
+              >
+                Liked List
+              </h3>
+            </div>
+            <p
+              style={{
+                margin: "0",
+                color: "#666",
+                fontFamily: "Arial, sans-serif",
+                fontSize: "0.95rem",
+                lineHeight: "1.5",
+              }}
+            >
+              With the liked list feature, you can mark your favorite items by
+              clicking the "heart" button while voting. Each liked item is
+              automatically saved to your personal collection, creating a
+              curated list of your top picks.
             </p>
           </div>
         </div>
