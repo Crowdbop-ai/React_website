@@ -441,53 +441,47 @@ const CrowdbopVoting = () => {
                 </Form.Group>
 
                 {/* Color Preferences Multi-Select */}
-                <Form.Group className="mb-4 p-3">
-                  <Form.Label className="fw-bold">What are your preferred colors? (Select all that apply)</Form.Label>
-                  <div className="d-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                    {colorOptions.map((color) => {
-                      const isDark = ['Black', 'Blue', 'Brown', 'Gray', 'Green', 'Purple', 'Red'].includes(color);
-                      const isSelected = userDetails.color.includes(color);
-                      return (
-                        <div
-                          key={color}
-                          className="d-flex align-items-center rounded p-2"
-                          style={{
-                            border: isSelected ? '2px solid #EE4A1B' : '1px solid #ccc',
-                            backgroundColor: '#f8f9fa',
-                            transition: 'all 0.2s ease-in-out',
-                            // cursor: userDetails.color.length > 0 && !isSelected ? 'not-allowed' : 'pointer'
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => {
-                            // if(userDetails.color.length > 0 && !isSelected) return;
-                            toggleColor(color);
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: '24px',
-                              height: '24px',
-                              backgroundColor: color.toLowerCase(),
-                              border: '1px solid #ddd',
-                              borderRadius: '50%',
-                              marginRight: '12px',
-                              boxShadow: '0 0 3px rgba(0,0,0,0.2)'
-                            }}
-                          />
-                          <span style={{ color: isDark ? '#333' : '#000', flex: 1 }}>{color}</span>
-                          <Form.Check
-                            type="checkbox"
-                            id={`color-${color}`}
-                            checked={isSelected}
-                            onChange={() => toggleColor(color)}
-                            className="ms-2"
-                            style={{ pointerEvents: 'none' }} // prevents double toggle
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </Form.Group>
+                <Form.Group className="mb-4">
+  <Form.Label className="fw-bold">What are your preferred colors? (Select all that apply)</Form.Label>
+  <div className="d-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+    {colorOptions.map((color) => {
+      const isDark = ['Black', 'Blue', 'Brown', 'Gray', 'Green', 'Purple', 'Red'].includes(color);
+      const isSelected = userDetails.color.includes(color);
+      return (
+        <div 
+          key={color} 
+          className="d-flex align-items-center rounded p-2"
+          style={{
+            border: isSelected ? '1px solid #EE4A1B' : '1px solid #ccc',
+            backgroundColor: isSelected ? '#FFF4EE' : '#f8f9fa',
+            transition: 'all 0.2s ease-in-out',
+            cursor: 'pointer',
+          }}
+          onClick={() => toggleColor(color)}
+        >
+          <div 
+            style={{
+              width: '24px',
+              height: '24px',
+              backgroundColor: color.toLowerCase(),
+              border: '1px solid #ddd',
+              borderRadius: '50%',
+              marginRight: '12px',
+              boxShadow: '0 0 3px rgba(0,0,0,0.2)'
+            }}
+          />
+          <span style={{ 
+            color: isDark ? '#333' : '#000', 
+            flex: 1,
+            fontWeight: isSelected ? 'bold' : 'normal'
+          }}>
+            {color}
+          </span>
+        </div>
+      );
+    })}
+  </div>
+</Form.Group>
                 <Button
                  className="mb-3 p-2" variant="light" type="submit"
                  style={{
