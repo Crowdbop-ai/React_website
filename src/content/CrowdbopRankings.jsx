@@ -122,6 +122,11 @@ function CrowdbopRankings() {
       return;
     }
 
+    // Check if already liked to avoid duplicates
+    if (likedItems.includes(product.ProductSIN)) {
+      return;
+    }
+
     try {
       const response = await fetch(
         "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like",
@@ -137,6 +142,9 @@ function CrowdbopRankings() {
       );
 
       if (!response.ok) throw new Error("Failed to like product");
+
+      // Update the UI immediately by adding to likedItems
+      setLikedItems([...likedItems, product.ProductSIN]);
       console.log("Product liked successfully");
     } catch (error) {
       console.error("Error liking product:", error);
@@ -154,11 +162,11 @@ function CrowdbopRankings() {
 
   return (
     <>
-      <h1 style={{ color: "#E85C41" }}>
+      {/* <h1 style={{ color: "#E85C41" }}>
         <Link to="/" style={{ color: "#E85C41", textDecoration: "none" }}>
           CrowdBop
         </Link>
-      </h1>
+      </h1> */}
       <h1>TOP RANKED PRODUCTS</h1>
 
       <div className="d-flex justify-content-center my-4">
