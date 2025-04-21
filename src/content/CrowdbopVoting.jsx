@@ -139,7 +139,7 @@ const CrowdbopVoting = () => {
   // Handle voting
   const handleVote = (winnerIndex) => {
     if (!userId) {
-      alert("Please enter a user ID to vote.");
+      alert("Please log in to vote.");
       setShowModal(true); // Reopen the modal if no user ID is provided
       return;
     }
@@ -227,7 +227,7 @@ const CrowdbopVoting = () => {
   );
 
   return (
-    <Container className="py-5">
+    <Container>
       <h1 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         WHICH PRODUCT DO YOU PREFER?
       </h1>
@@ -459,7 +459,7 @@ const CrowdbopVoting = () => {
                       width: "100%",
                       fontWeight: "bold",
                     }}
-                    disabled={!userId} // Disable button if no user ID is provided
+                    // disabled={!userId} // Disable button if no user ID is provided
                   >
                     Vote
                   </Button>

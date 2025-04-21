@@ -19,26 +19,17 @@ const CrowdbopHome = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem("userId") || "");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [designers, setDesigners] = useState([]);
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [userDetails, setUserDetails] = useState({
-    gender: "",
-    preferredDesigner: [],
-    age: "",
-  });
+  const [designers, setDesigners] = useState([]); // designerNames
+  const [reload, setReload] = useState(false);
 
   // Fetch designers
   useEffect(() => {
     const fetchDesigners = async () => {
       try {
         const response = await fetch("src/assets/top_designers.json");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        if (!data) {
-          throw new Error("No data received");
-        }
+        if (!data) throw new Error("No data received");
         const designerNames = Object.values(data);
         setDesigners(designerNames);
       } catch (err) {
@@ -46,21 +37,35 @@ const CrowdbopHome = () => {
         setError("Failed to load designer data. Please refresh the page.");
       }
     };
-
+  
     fetchDesigners();
-
-    if (!userId) {
-      setShowModal(true);
-    }
     setTimeout(() => setIsAnimated(true), 100);
   }, []);
+  
+  const colorOptions = [
+    'Red', 'Pink', 'Orange', 'Yellow', 'Green', 'Blue', 
+    'Purple', 'White', 'Cream', 'Beige', 'Brown', 
+    'Black', 'Gray', 'Silver', 'Gold', 'Metallic', 
+    'Transparent', 'Multicolor', 'Other'
+  ];
+
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [userDetails, setUserDetails] = useState({
+    gender: '',
+    preferredDesigner: [],
+    age: '',
+    priceRange: [],
+    colorPreferences: []
+  });
 
   const handleNewUserToggle = () => {
     setIsNewUser(!isNewUser);
     setUserDetails({
-      gender: "",
+      gender: '',
       preferredDesigner: [],
-      age: "",
+      age: '',
+      priceRange: [],
+      colorPreferences: []
     });
   };
 
@@ -70,12 +75,8 @@ const CrowdbopHome = () => {
       [field]: value,
     }));
   };
-
-  const isSignupValid =
-    userId.trim() &&
-    userDetails.gender &&
-    userDetails.preferredDesigner.length > 0 &&
-    userDetails.age;
+  
+  const isSignupValid = userId.trim();
 
   const handleLogin = async () => {
     if (!userId.trim()) {
@@ -100,6 +101,8 @@ const CrowdbopHome = () => {
 
       if (response.ok) {
         sessionStorage.setItem("userId", userId);
+        sessionStorage.removeItem("showLoginModal");
+        window.dispatchEvent(new Event("storage"));
         setShowModal(false);
       } else if (response.status === 401) {
         setError("User not found. Please sign up first.");
@@ -131,7 +134,14 @@ const CrowdbopHome = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ userId: userId.trim() }),
+          body: JSON.stringify({
+             userId: userId.trim(),
+             gender: userDetails.gender,
+             age: userDetails.age,
+             preferredDesigners: userDetails.preferredDesigner,
+             priceRangePreference: userDetails.priceRange,
+             colorPreferences: userDetails.colorPreferences
+          }),
         }
       );
 
@@ -141,6 +151,8 @@ const CrowdbopHome = () => {
         setError(data.message || "A user with this ID already exists");
       } else {
         sessionStorage.setItem("userId", userId);
+        sessionStorage.removeItem("showLoginModal");
+        window.dispatchEvent(new Event("storage"));
         setShowModal(false);
       }
     } catch (err) {
@@ -168,7 +180,41 @@ const CrowdbopHome = () => {
       } else {
         return {
           ...prev,
-          preferredDesigner: [...currentDesigners, designer],
+          preferredDesigner: [...currentDesigners, designer]
+        };
+      }
+    });
+  };
+
+  const togglePriceRange = (range) => {
+    setUserDetails(prev => {
+      const currentRanges = prev.priceRange;
+      if (currentRanges.includes(range)) {
+        return {
+          ...prev,
+          priceRange: currentRanges.filter(r => r !== range)
+        };
+      } else {
+        return {
+          ...prev,
+          priceRange: [...currentRanges, range]
+        };
+      }
+    });
+  };
+  
+  const toggleColor = (color) => {
+    setUserDetails(prev => {
+      const currentColors = prev.colorPreferences;
+      if (currentColors.includes(color)) {
+        return {
+          ...prev,
+          colorPreferences: currentColors.filter(c => c !== color)
+        };
+      } else {
+        return {
+          ...prev,
+          colorPreferences: [...currentColors, color]
         };
       }
     });
@@ -191,16 +237,18 @@ const CrowdbopHome = () => {
           Your opinions shape our collection.
         </p>
 
-        {/* User ID Modal */}
         <Modal
-          show={showModal}
-          onHide={() => setShowModal(false)}
+          show={sessionStorage.getItem("showLoginModal")==="true"}
+          onHide={() => {
+            sessionStorage.removeItem("showLoginModal");
+            setReload(prev => !prev);         
+          }}
           centered
           backdrop="static"
-          keyboard={false}
+          keyboard={true}
         >
-          <Modal.Header closeButton={false}>
-            <Modal.Title className="crowdbop-font">
+          <Modal.Header closeButton>
+            <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
               {isNewUser ? "Create New Account" : "Enter Your User ID"}
             </Modal.Title>
           </Modal.Header>
@@ -219,7 +267,7 @@ const CrowdbopHome = () => {
                 </Form.Text>
               </Form.Group>
 
-              <Form.Check
+              <Form.Check 
                 type="switch"
                 id="new-user-switch"
                 label="New User?"
@@ -232,11 +280,9 @@ const CrowdbopHome = () => {
                 <>
                   <Form.Group className="mb-3">
                     <Form.Label>What is your gender?</Form.Label>
-                    <Form.Select
+                    <Form.Select 
                       value={userDetails.gender}
-                      onChange={(e) =>
-                        handleUserDetailChange("gender", e.target.value)
-                      }
+                      onChange={(e) => handleUserDetailChange('gender', e.target.value)}
                     >
                       <option value="">Select gender</option>
                       <option value="male">Male</option>
@@ -252,42 +298,117 @@ const CrowdbopHome = () => {
                       min="15"
                       max="120"
                       value={userDetails.age}
-                      onChange={(e) =>
-                        handleUserDetailChange("age", e.target.value)
-                      }
+                      onChange={(e) => handleUserDetailChange('age', e.target.value)}
                       placeholder="Enter your age"
                     />
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label>
-                      What is your preferred designer? (Select all that apply)
-                    </Form.Label>
-                    <div className="d-flex flex-wrap gap-2">
+                    <Form.Label>What is your preferred designer? (Select all that apply)</Form.Label>
+                    <div className="d-flex flex-wrap" style={{ gap: '10px' }}>
                       {designers.map((designer) => (
                         <Button
                           key={designer}
-                          variant={
-                            userDetails.preferredDesigner.includes(designer)
-                              ? "secondary"
-                              : "outline-secondary"
-                          }
+                          variant={userDetails.preferredDesigner.includes(designer) ? 'secondary' : 'outline-secondary'}
                           onClick={() => toggleDesignerSelection(designer)}
-                          className="designer-button"
+                          style={{
+                            borderRadius: '50px',
+                            padding: '8px 12px',
+                            minHeight: '40px', 
+                            flex: '1 0 auto', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
                         >
-                          <span className="designer-name">{designer}</span>
+                          <span style={{
+                            display: 'inline-block',
+                            maxWidth: '100%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {designer}
+                          </span>
                         </Button>
                       ))}
                     </div>
                   </Form.Group>
+                  {/* Price Range Multi-Select */}
+                  <Form.Group className="mb-3">
+                    <Form.Label>What are your preferred price ranges? (Select all that apply)</Form.Label>
+                    <div className="d-flex flex-column" style={{ gap: '8px' }}>
+                      {['Budget: Under $50', 'Affordable: $50 – $150', 'Mid-Range: $150 – $500', 
+                        'Premium: $500 – $1000', 'Luxury: $1000+'].map((range) => {
+                        const value = range.split(':')[0].toLowerCase().trim();
+                        return (
+                          <Form.Check 
+                            key={value}
+                            type="checkbox"
+                            id={`price-${value}`}
+                            label={range}
+                            checked={userDetails.priceRange.includes(value)}
+                            onChange={() => togglePriceRange(value)}
+                            style={{"accentColor": "black", color:"black"}}
+                          />
+                        );
+                      })}
+                    </div>
+                  </Form.Group>
+
+                  {/* Color Preferences Multi-Select */}
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-bold">What are your preferred colors? (Select all that apply)</Form.Label>
+                    <div className="d-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                      {colorOptions.map((color) => {
+                        const isDark = ['Black', 'Blue', 'Brown', 'Gray', 'Green', 'Purple', 'Red'].includes(color);
+                        const isSelected = userDetails.colorPreferences.includes(color);
+                        return (
+                          <div 
+                            key={color} 
+                            className="d-flex align-items-center rounded p-2"
+                            style={{
+                              border: isSelected ? '2px solid #EE4A1B' : '1px solid #ccc',
+                              backgroundColor: '#f8f9fa',
+                              transition: 'all 0.2s ease-in-out',
+                              cursor: 'pointer',
+                            }}
+                            onClick={() => toggleColor(color)}
+                          >
+                            <div 
+                              style={{
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: color.toLowerCase(),
+                                border: '1px solid #ddd',
+                                borderRadius: '50%',
+                                marginRight: '12px',
+                                boxShadow: '0 0 3px rgba(0,0,0,0.2)'
+                              }}
+                            />
+                            <span style={{ color: isDark ? '#333' : '#000', flex: 1 }}>{color}</span>
+                            <Form.Check
+                              type="checkbox"
+                              id={`color-${color}`}
+                              checked={isSelected}
+                              onChange={() => toggleColor(color)}
+                              className="ms-2"
+                              style={{ pointerEvents: 'none' }} // prevents double toggle
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Form.Group>
+
+
                 </>
               )}
             </Form>
-            {error && (
-              <Alert variant="danger" className="mt-3">
-                {error}
-              </Alert>
-            )}
+            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
           </Modal.Body>
           <Modal.Footer>
             <Button
@@ -304,16 +425,22 @@ const CrowdbopHome = () => {
               disabled={isLoading || !isNewUser || !isSignupValid}
               className="crowdbop-font crowdbop-button"
             >
-              {isLoading ? "Signing Up..." : "Sign Up"}
+              Sign Up
             </Button>
           </Modal.Footer>
         </Modal>
-
-        {/* Action Buttons */}
-        <div className="d-flex flex-column align-items-center gap-4 mt-4">
-          <Button
-            variant="outline-primary"
-            className="crowdbop-action-button"
+        {/* Custom Button */}
+        {/* Buttons Container (Stacked Vertically) */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "20px", // Spacing between buttons
+            marginTop: "30px",
+          }}
+        >
+          <button
             onClick={() => navigate("/voting")}
           >
             Start Voting Now
@@ -331,33 +458,8 @@ const CrowdbopHome = () => {
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
-          </Button>
-
-          <Button
-            variant="outline-primary"
-            className="crowdbop-action-button"
-            onClick={() => navigate("/liked")}
-          >
-            View Liked Items
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="ms-2 arrow-animation"
-            >
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </Button>
-
-          <Button
-            variant="outline-primary"
-            className="crowdbop-action-button"
+          </button>
+          <button
             onClick={() => navigate("/rankings")}
           >
             Skip to Leaderboard
@@ -379,25 +481,6 @@ const CrowdbopHome = () => {
         </div>
       </div>
 
-      {/* User ID and Logout Display */}
-      {userId && (
-        <Row className="justify-content-center mt-3 mb-5">
-          <Col xs={12} className="text-center mb-2">
-            <p className="mb-0">
-              <strong>User ID: {userId}</strong>
-            </p>
-          </Col>
-          <Col xs="auto" className="text-center">
-            <Button
-              variant="warning"
-              onClick={handleLogout}
-              className="fw-bold text-white crowdbop-logout-btn"
-            >
-              Logout
-            </Button>
-          </Col>
-        </Row>
-      )}
 
       {/* How It Works Section */}
       <Card
