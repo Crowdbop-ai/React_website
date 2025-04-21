@@ -40,60 +40,12 @@ function CrowdbopLikedItems() {
     }
   };
   // If user is not logged in, show a message with a disabled login button
-  console.log(userId);
+  // console.log(userId);
   if (!userId) {
     return (
       <Container className="text-center" style={{ marginTop: "5rem" }}>
         <h2>You are not logged in.</h2>
         <p>Please log in to view your liked items.</p>
-        <Button variant="primary" onClick={() => setShowModal(true)}>
-          Log In
-        </Button>{" "}
-        {/* Disabled button */}
-        {/* Login Modal */}
-        <Modal
-          show={showModal}
-          onHide={() => setShowModal(false)}
-          centered
-          backdrop="static"
-          keyboard={false}
-        >
-          <Modal.Header closeButton={false}>
-            <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
-              Enter Your User ID
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group controlId="userIdInput">
-                <Form.Label>User ID</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Ex: bbadger"
-                  value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  style={{ fontFamily: "Arial, sans-serif" }}
-                />
-                <Form.Text className="text-muted">
-                  This ID will be used to track your votes and liked items.
-                </Form.Text>
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="primary"
-              onClick={handleSubmit}
-              style={{
-                backgroundColor: "#E85C41",
-                border: "none",
-                fontFamily: "'Archivo Black', sans-serif",
-              }}
-            >
-              Submit
-            </Button>
-          </Modal.Footer>
-        </Modal>
       </Container>
     );
   }

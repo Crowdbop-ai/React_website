@@ -121,25 +121,28 @@ function CrowdbopRankings() {
       alert("Please log in to like products.");
       return;
     }
-  
+
     // Check if already liked to avoid duplicates
     if (likedItems.includes(product.ProductSIN)) {
       return;
     }
-  
+
     try {
-      const response = await fetch("https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          productSIN: product.ProductSIN,
-          categoryId: selectedCategory
-        })
-      });
-  
+      const response = await fetch(
+        "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/add-like",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            productSIN: product.ProductSIN,
+            categoryId: selectedCategory,
+          }),
+        }
+      );
+
       if (!response.ok) throw new Error("Failed to like product");
-      
+
       // Update the UI immediately by adding to likedItems
       setLikedItems([...likedItems, product.ProductSIN]);
       console.log("Product liked successfully");
@@ -302,9 +305,11 @@ function CrowdbopRankings() {
                             borderRadius: "50%",
                             padding: "4px",
                             lineHeight: 1,
-                            // color: likedItems.includes(item.ProductSIN) == 1 ? "#EE4A1B" : "#808080",
-                            color: likedItems.includes(item.ProductSIN) ? "#EE4A1B" : "#808080",
-                            marginBottom: "5px"
+                            color:
+                              likedItems.includes(item.ProductSIN) == 1
+                                ? "#EE4A1B"
+                                : "#808080",
+                            marginBottom: "5px",
                           }}
                           aria-label={`Like ${item.ProductName}`}
                         >
