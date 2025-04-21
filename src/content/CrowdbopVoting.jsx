@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Button, Container, Row, Col, Modal, Form } from "react-bootstrap";
 import { FaHeart } from "react-icons/fa";
 import placeholderImage from "../assets/loading.JPG"; // Import the placeholder image
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 
 const CrowdbopVoting = () => {
   const [currentProducts, setCurrentProducts] = useState([]); // Current pair of products to display
@@ -13,7 +13,9 @@ const CrowdbopVoting = () => {
   const [showModal, setShowModal] = useState(false); // Control modal visibility
   const [userId, setUserId] = useState(sessionStorage.getItem("userId") || ""); // Get userId from session storage if it exists
   const [categories, setCategories] = useState([]); // List of available categories
-  const [selectedCategory, setSelectedCategory] = useState(sessionStorage.getItem("selectedCategory") || "shoes"); // Default category
+  const [selectedCategory, setSelectedCategory] = useState(
+    sessionStorage.getItem("selectedCategory") || "shoes"
+  ); // Default category
   const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
   const [likedItems, setLikedItems] = useState([0, 0]);
 
@@ -194,6 +196,12 @@ const CrowdbopVoting = () => {
     fetchNextPair();
   };
 
+  // Handle logout
+  const handleLogout = () => {
+    sessionStorage.removeItem("userId"); // Remove userId from session storage
+    setUserId(""); // Clear userId from state
+  };
+
   // Format category ID for display (remove underscores, capitalize first letter)
   const formatCategoryName = (categoryId) => {
     if (!categoryId) return "";
@@ -208,7 +216,7 @@ const CrowdbopVoting = () => {
     setSelectedCategory(categoryId);
     setShowCategories(false); // Close dropdown after selection
     // Save in session storage
-    sessionStorage.setItem("selectedCategory", categoryId)
+    sessionStorage.setItem("selectedCategory", categoryId);
   };
 
   // Like Button tooltip
@@ -278,10 +286,10 @@ const CrowdbopVoting = () => {
                     (e.currentTarget.style.backgroundColor = "#f0f0f0")
                   }
                   onMouseOut={(e) =>
-                  (e.currentTarget.style.backgroundColor =
-                    selectedCategory === category.id
-                      ? "#f5f5f5"
-                      : "transparent")
+                    (e.currentTarget.style.backgroundColor =
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent")
                   }
                 >
                   {category.name || formatCategoryName(category.id)}
@@ -291,6 +299,51 @@ const CrowdbopVoting = () => {
           )}
         </div>
       </div>
+
+      {/* User ID Modal */}
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton={false}>
+          <Modal.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+            Enter Your User ID
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="userIdInput">
+              <Form.Label>User ID</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Ex: bbadger"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                style={{ fontFamily: "Arial, sans-serif" }}
+              />
+              <Form.Text className="text-muted">
+                This ID will be used to track your votes.
+              </Form.Text>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            style={{
+              backgroundColor: "#E85C41",
+              border: "none",
+              fontFamily: "'Archivo Black', sans-serif",
+            }}
+          >
+            Submit
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Product Display */}
       <Row className="justify-content-center">
@@ -349,7 +402,9 @@ const CrowdbopVoting = () => {
                         maxHeight: "400px",
                         width: "100%",
                         objectFit: "contain",
+                        cursor: "pointer", // Add cursor pointer to show it's clickable
                       }}
+                      onClick={() => handleVote(index)} // Add this line to make the image clickable
                     />
                     <OverlayTrigger
                       placement="right"
@@ -358,7 +413,10 @@ const CrowdbopVoting = () => {
                     >
                       <Button
                         variant="link"
-                        onClick={() => handleLike(product, index)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Stop the click from triggering the parent div's onClick
+                          handleLike(product, index);
+                        }}
                         style={{
                           position: "absolute",
                           top: "12px",
@@ -429,6 +487,42 @@ const CrowdbopVoting = () => {
             Skip to Rankings
           </Button>
         </Link>
+      </div>
+
+      {/* Login/Logout Section */}
+      <div className="text-center mt-3">
+        {userId ? (
+          // If logged in, show User ID and Logout button
+          <>
+            <small>User ID: {userId}</small>
+            <Button
+              variant="link"
+              onClick={handleLogout}
+              style={{
+                color: "#E85C41",
+                fontSize: "0.8rem",
+                marginLeft: "10px",
+                textDecoration: "none",
+              }}
+            >
+              (Logout)
+            </Button>
+          </>
+        ) : (
+          // If not logged in, show Login button
+          <Button
+            variant="link"
+            onClick={() => setShowModal(true)}
+            style={{
+              color: "#E85C41",
+              fontSize: "0.8rem",
+              marginLeft: "10px",
+              textDecoration: "none",
+            }}
+          >
+            (Log In)
+          </Button>
+        )}
       </div>
     </Container>
   );

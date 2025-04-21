@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Col, Container, Row, Button, Pagination } from "react-bootstrap";
 import { FaHeart } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 
 const imgBaseURL = "https://m.media-amazon.com/images/G/01/Shopbop/p";
 const itemBaseURL = "https://www.shopbop.com/";
@@ -12,12 +12,13 @@ function CrowdbopRankings() {
   const [rankingsData, setRankingsData] = useState([]);
   const [page, setPage] = useState(1);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(sessionStorage.getItem("selectedCategory") || "shoes");
+  const [selectedCategory, setSelectedCategory] = useState(
+    sessionStorage.getItem("selectedCategory") || "shoes"
+  );
   const [showCategories, setShowCategories] = useState(false);
   const [sortBy, setSortBy] = useState("eloRating");
   const [likedItems, setLikedItems] = useState([]);
   const [userId, setUserId] = useState(sessionStorage.getItem("userId") || "");
-
 
   const formatCategoryName = (categoryId) => {
     if (!categoryId) return "";
@@ -71,7 +72,9 @@ function CrowdbopRankings() {
     const fetchRankings = async () => {
       try {
         const response = await fetch(
-          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/leaderboard?category=${selectedCategory}&limit=10&offset=${(page - 1) * 10}&sortBy=${sortBy}`
+          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/leaderboard?category=${selectedCategory}&limit=10&offset=${
+            (page - 1) * 10
+          }&sortBy=${sortBy}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -93,13 +96,12 @@ function CrowdbopRankings() {
         );
         if (response.ok) {
           const data = await response.json();
-          const likedSINs = data.likedItems.map(item => item.ProductSIN);
+          const likedSINs = data.likedItems.map((item) => item.ProductSIN);
           setLikedItems(likedSINs || []);
         } else {
           console.error("Failed to fetch liked items");
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error("Error fetching user likes:", error);
       }
     };
@@ -113,7 +115,6 @@ function CrowdbopRankings() {
   const handlePrev = () => {
     setPage((p) => p - 1);
   };
-
 
   const handleLike = async (product, index) => {
     if (!userId) {
@@ -209,15 +210,19 @@ function CrowdbopRankings() {
                     padding: "8px 12px",
                     cursor: "pointer",
                     backgroundColor:
-                      selectedCategory === category.id ? "#f5f5f5" : "transparent",
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent",
                     color: "black",
                   }}
                   onMouseOver={(e) =>
                     (e.currentTarget.style.backgroundColor = "#f0f0f0")
                   }
                   onMouseOut={(e) =>
-                  (e.currentTarget.style.backgroundColor =
-                    selectedCategory === category.id ? "#f5f5f5" : "transparent")
+                    (e.currentTarget.style.backgroundColor =
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent")
                   }
                 >
                   {category.name || formatCategoryName(category.id)}
@@ -240,7 +245,8 @@ function CrowdbopRankings() {
             xs={3}
             style={{
               cursor: "pointer",
-              backgroundColor: sortBy !== "eloRating" ? "#FFE5DC" : "transparent",
+              backgroundColor:
+                sortBy !== "eloRating" ? "#FFE5DC" : "transparent",
             }}
             onClick={() => {
               setSortBy("wins");
@@ -253,7 +259,8 @@ function CrowdbopRankings() {
             xs={3}
             style={{
               cursor: "pointer",
-              backgroundColor: sortBy === "eloRating" ? "#FFE5DC" : "transparent",
+              backgroundColor:
+                sortBy === "eloRating" ? "#FFE5DC" : "transparent",
             }}
             onClick={() => {
               setSortBy("eloRating");
@@ -316,14 +323,20 @@ function CrowdbopRankings() {
                 <Col
                   xs={3}
                   className="d-flex align-items-center justify-content-center"
-                  style={{ backgroundColor: sortBy !== "eloRating" ? "#FFF4EE" : "transparent" }}
+                  style={{
+                    backgroundColor:
+                      sortBy !== "eloRating" ? "#FFF4EE" : "transparent",
+                  }}
                 >
                   <h3 className="text-center">{item.Wins}</h3>
                 </Col>
                 <Col
                   xs={3}
                   className="d-flex align-items-center justify-content-center"
-                  style={{ backgroundColor: sortBy === "eloRating" ? "#FFF4EE" : "transparent" }}
+                  style={{
+                    backgroundColor:
+                      sortBy === "eloRating" ? "#FFF4EE" : "transparent",
+                  }}
                 >
                   <h3 className="text-center">{item.EloRating}</h3>
                 </Col>
