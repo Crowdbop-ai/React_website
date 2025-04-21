@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Button, Container, Row, Col, Modal, Form } from "react-bootstrap";
 import { FaHeart } from "react-icons/fa";
 import placeholderImage from "../assets/loading.JPG"; // Import the placeholder image
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 
 const CrowdbopVoting = () => {
   const [currentProducts, setCurrentProducts] = useState([]); // Current pair of products to display
@@ -13,60 +13,75 @@ const CrowdbopVoting = () => {
   const [showModal, setShowModal] = useState(false); // Control modal visibility
   const [userId, setUserId] = useState(sessionStorage.getItem("userId") || ""); // Get userId from session storage if it exists
   const [categories, setCategories] = useState([]); // List of available categories
-  const [selectedCategory, setSelectedCategory] = useState(sessionStorage.getItem("selectedCategory") || "shoes"); // Default category
+  const [selectedCategory, setSelectedCategory] = useState(
+    sessionStorage.getItem("selectedCategory") || "shoes"
+  ); // Default category
   const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
   const [showFilters, setShowFilters] = useState(false); // Control filters visibility
   const [likedItems, setLikedItems] = useState([0, 0]);
   const [userDetails, setUserDetails] = useState({
-    gender: '',
+    gender: "",
     priceRange: [],
-    color: []
+    color: [],
   });
 
   console.log(userDetails);
 
   const colorOptions = [
-    'Red', 'Pink', 'Orange', 'Yellow', 'Green', 'Blue',
-    'Purple', 'White', 'Cream', 'Beige', 'Brown',
-    'Black', 'Gray', 'Silver', 'Gold', 'Metallic',
-    'Transparent', 'Multicolor', 'Other'
+    "Red",
+    "Pink",
+    "Orange",
+    "Yellow",
+    "Green",
+    "Blue",
+    "Purple",
+    "White",
+    "Cream",
+    "Beige",
+    "Brown",
+    "Black",
+    "Gray",
+    "Silver",
+    "Gold",
+    "Metallic",
+    "Transparent",
+    "Multicolor",
+    "Other",
   ];
 
-
   const togglePriceRange = (range) => {
-    setUserDetails(prev => {
+    setUserDetails((prev) => {
       const currentRanges = prev.priceRange;
       if (currentRanges.includes(range)) {
         return {
           ...prev,
-          priceRange: currentRanges.filter(r => r !== range)
+          priceRange: currentRanges.filter((r) => r !== range),
         };
       } else {
         return {
           ...prev,
-          priceRange: [...currentRanges, range]
+          priceRange: [...currentRanges, range],
         };
       }
     });
   };
 
   const toggleColor = (color) => {
-    setUserDetails(prev => {
+    setUserDetails((prev) => {
       const currentColors = prev.color;
       if (currentColors.includes(color)) {
         return {
           ...prev,
-          color: currentColors.filter(c => c !== color)
+          color: currentColors.filter((c) => c !== color),
         };
       } else {
         return {
           ...prev,
-          color: [...currentColors, color]
+          color: [...currentColors, color],
         };
       }
     });
   };
-
 
   // Fetch available categories on page load
   useEffect(() => {
@@ -112,13 +127,15 @@ const CrowdbopVoting = () => {
       const queryParams = new URLSearchParams({
         category: selectedCategory,
         gender: userDetails.gender,
-        priceRange: userDetails.priceRange.join(','),
-        color: userDetails.color.join(',')
+        priceRange: userDetails.priceRange.join(","),
+        color: userDetails.color.join(","),
       });
       const response = await fetch(
         `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?${queryParams.toString()}`
       );
-      console.log(`https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?${queryParams.toString()}`);
+      console.log(
+        `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?${queryParams.toString()}`
+      );
       const data = await response.json();
       setCurrentProducts(data.products);
       // Fetch the next pair immediately after.
@@ -150,8 +167,8 @@ const CrowdbopVoting = () => {
       const queryParams = new URLSearchParams({
         category: selectedCategory,
         gender: userDetails.gender,
-        priceRange: userDetails.priceRange.join(','),
-        color: userDetails.color.join(',')
+        priceRange: userDetails.priceRange.join(","),
+        color: userDetails.color.join(","),
       });
       const response = await fetch(
         `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?${queryParams.toString()}`
@@ -285,7 +302,7 @@ const CrowdbopVoting = () => {
     setSelectedCategory(categoryId);
     setShowCategories(false); // Close dropdown after selection
     // Save in session storage
-    sessionStorage.setItem("selectedCategory", categoryId)
+    sessionStorage.setItem("selectedCategory", categoryId);
   };
 
   // Like Button tooltip
@@ -355,10 +372,10 @@ const CrowdbopVoting = () => {
                     (e.currentTarget.style.backgroundColor = "#f0f0f0")
                   }
                   onMouseOut={(e) =>
-                  (e.currentTarget.style.backgroundColor =
-                    selectedCategory === category.id
-                      ? "#f5f5f5"
-                      : "transparent")
+                    (e.currentTarget.style.backgroundColor =
+                      selectedCategory === category.id
+                        ? "#f5f5f5"
+                        : "transparent")
                   }
                 >
                   {category.name || formatCategoryName(category.id)}
@@ -408,7 +425,9 @@ const CrowdbopVoting = () => {
                   <Form.Label>What is your gender?</Form.Label>
                   <Form.Select
                     value={userDetails.gender}
-                    onChange={(e) => handleUserDetailChange('gender', e.target.value)}
+                    onChange={(e) =>
+                      handleUserDetailChange("gender", e.target.value)
+                    }
                   >
                     <option value="">Select gender</option>
                     <option value="male">Male</option>
@@ -419,217 +438,260 @@ const CrowdbopVoting = () => {
 
                 {/* Price Range Multi-Select */}
                 <Form.Group className="mb-3 p-3">
-                  <Form.Label>What are your preferred price ranges? (Select all that apply)</Form.Label>
-                  <div className="d-flex flex-column" style={{ gap: '8px' }}>
-                    {['Budget: Under $50', 'Affordable: $50 – $150', 'Mid-Range: $150 – $500',
-                      'Premium: $500 – $1000', 'Luxury: $1000+'].map((range) => {
-                        const value = range.split(':')[0].toLowerCase().trim();
-                        return (
-                          <Form.Check
-                            key={value}
-                            type="checkbox"
-                            id={`price-${value}`}
-                            label={range}
-                            checked={userDetails.priceRange.includes(value)}
-                            onChange={() => togglePriceRange(value)}
-                            // disabled={userDetails.priceRange.length > 0 && !userDetails.priceRange.includes(value)}
-                            style={{ "accentColor": "black", color: "black" }}
-                          />
-                        );
-                      })}
+                  <Form.Label>
+                    What are your preferred price ranges? (Select all that
+                    apply)
+                  </Form.Label>
+                  <div className="d-flex flex-column" style={{ gap: "8px" }}>
+                    {[
+                      "Budget: Under $50",
+                      "Affordable: $50 – $150",
+                      "Mid-Range: $150 – $500",
+                      "Premium: $500 – $1000",
+                      "Luxury: $1000+",
+                    ].map((range) => {
+                      const value = range.split(":")[0].toLowerCase().trim();
+                      return (
+                        <Form.Check
+                          key={value}
+                          type="checkbox"
+                          id={`price-${value}`}
+                          label={range}
+                          checked={userDetails.priceRange.includes(value)}
+                          onChange={() => togglePriceRange(value)}
+                          // disabled={userDetails.priceRange.length > 0 && !userDetails.priceRange.includes(value)}
+                          style={{ accentColor: "black", color: "black" }}
+                        />
+                      );
+                    })}
                   </div>
                 </Form.Group>
 
                 {/* Color Preferences Multi-Select */}
                 <Form.Group className="mb-4">
-  <Form.Label className="fw-bold">What are your preferred colors? (Select all that apply)</Form.Label>
-  <div className="d-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-    {colorOptions.map((color) => {
-      const isDark = ['Black', 'Blue', 'Brown', 'Gray', 'Green', 'Purple', 'Red'].includes(color);
-      const isSelected = userDetails.color.includes(color);
-      return (
-        <div 
-          key={color} 
-          className="d-flex align-items-center rounded p-2"
-          style={{
-            border: isSelected ? '1px solid #EE4A1B' : '1px solid #ccc',
-            backgroundColor: isSelected ? '#FFF4EE' : '#f8f9fa',
-            transition: 'all 0.2s ease-in-out',
-            cursor: 'pointer',
-          }}
-          onClick={() => toggleColor(color)}
-        >
-          <div 
-            style={{
-              width: '24px',
-              height: '24px',
-              backgroundColor: color.toLowerCase(),
-              border: '1px solid #ddd',
-              borderRadius: '50%',
-              marginRight: '12px',
-              boxShadow: '0 0 3px rgba(0,0,0,0.2)'
-            }}
-          />
-          <span style={{ 
-            color: isDark ? '#333' : '#000', 
-            flex: 1,
-            fontWeight: isSelected ? 'bold' : 'normal'
-          }}>
-            {color}
-          </span>
-        </div>
-      );
-    })}
-  </div>
-</Form.Group>
+                  <Form.Label className="fw-bold">
+                    What are your preferred colors? (Select all that apply)
+                  </Form.Label>
+                  <div
+                    className="d-grid"
+                    style={{
+                      gridTemplateColumns: "repeat(2, 1fr)",
+                      gap: "16px",
+                    }}
+                  >
+                    {colorOptions.map((color) => {
+                      const isDark = [
+                        "Black",
+                        "Blue",
+                        "Brown",
+                        "Gray",
+                        "Green",
+                        "Purple",
+                        "Red",
+                      ].includes(color);
+                      const isSelected = userDetails.color.includes(color);
+                      return (
+                        <div
+                          key={color}
+                          className="d-flex align-items-center rounded p-2"
+                          style={{
+                            border: isSelected
+                              ? "1px solid #EE4A1B"
+                              : "1px solid #ccc",
+                            backgroundColor: isSelected ? "#FFF4EE" : "#f8f9fa",
+                            transition: "all 0.2s ease-in-out",
+                            cursor: "pointer",
+                            margin: "5px",
+                          }}
+                          onClick={() => toggleColor(color)}
+                        >
+                          <div
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              backgroundColor: color.toLowerCase(),
+                              border: "1px solid #ddd",
+                              borderRadius: "50%",
+                              marginRight: "12px",
+                              boxShadow: "0 0 3px rgba(0,0,0,0.2)",
+                            }}
+                          />
+                          <span
+                            style={{
+                              color: isDark ? "#333" : "#000",
+                              flex: 1,
+                              fontWeight: isSelected ? "bold" : "normal",
+                            }}
+                          >
+                            {color}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Form.Group>
                 <Button
-                 className="mb-3 p-2" variant="light" type="submit"
-                 style={{
-                  border: "2px solid #ddd",
-                  borderRadius: "5px",
-                 }}
-                 >Apply Filters</Button>
+                  className="mb-3 p-2"
+                  variant="light"
+                  type="submit"
+                  style={{
+                    border: "2px solid #ddd",
+                    borderRadius: "5px",
+                  }}
+                >
+                  Apply Filters
+                </Button>
               </Form>
             </div>
           )}
         </div>
       </div>
 
-
       {/* Product Display */}
-{/* Product Display */}
-<Row className="justify-content-center">
-  {isLoading ? (
-    // Show loading placeholder only on initial load
-    <>
-      <Col xs={6} md={5} className="mb-4"> {/* Changed to xs={6} */}
-        <div className="text-center">
-          <img
-            src={placeholderImage}
-            alt="Loading..."
-            className="img-fluid mb-3"
-            style={{
-              maxHeight: "400px",
-              width: "100%",
-              objectFit: "contain",
-            }}
-          />
-          <h3 className="mt-2 font-weight-bold">Loading...</h3>
-          <p>Loading...</p>
-          <p className="font-weight-bold">Loading...</p>
-        </div>
-      </Col>
-      <Col xs={6} md={5} className="mb-4"> {/* Changed to xs={6} */}
-        <div className="text-center">
-          <img
-            src={placeholderImage}
-            alt="Loading..."
-            className="img-fluid mb-3"
-            style={{
-              maxHeight: "400px",
-              width: "100%",
-              objectFit: "contain",
-            }}
-          />
-          <h3 className="mt-2 font-weight-bold">Loading...</h3>
-          <p>Loading...</p>
-          <p className="font-weight-bold">Loading...</p>
-        </div>
-      </Col>
-    </>
-  ) : (
-    // Show the current pair of products
-    currentProducts.map((product, index) => {
-      const imageUrl = `https://m.media-amazon.com/images/G/01/Shopbop/p/${product.PrimaryImageURL}`;
-
-      return (
-        <Col xs={6} md={5} className="mb-4 px-2" key={product.ProductSIN}> {/* Changed to xs={6} and added px-2 */}
-          <div className="text-center h-100">
-            <div style={{ 
-              position: "relative", 
-              marginBottom: "1rem",
-              height: "calc(100% - 120px)" // Adjust based on your content height
-            }}>
-              <img
-                src={imageUrl}
-                alt={product.ProductName}
-                className="img-fluid"
-                style={{
-                  maxHeight: "300px", // Reduced from 400px
-                  width: "100%",
-                  objectFit: "contain",
-                  cursor: 'pointer',
-                }}
-                onClick={() => handleVote(index)}
-              />
-              <OverlayTrigger
-                placement="right"
-                delay={{ show: 250, hide: 400 }}
-                overlay={renderTooltip}
-              >
-                <Button
-                  variant="link"
-                  onClick={() => {
-                    e.stopPropagation(); 
-                    handleLike(product, index)}}
+      {/* Product Display */}
+      <Row className="justify-content-center">
+        {isLoading ? (
+          // Show loading placeholder only on initial load
+          <>
+            <Col xs={6} md={5} className="mb-4">
+              {" "}
+              {/* Changed to xs={6} */}
+              <div className="text-center">
+                <img
+                  src={placeholderImage}
+                  alt="Loading..."
+                  className="img-fluid mb-3"
                   style={{
-                    position: "absolute",
-                    top: "8px", // Reduced from 12px
-                    right: "8px", // Reduced from 12px
-                    backgroundColor: "white",
-                    borderRadius: "50%",
-                    padding: "2px", // Reduced from 4px
-                    lineHeight: 1,
-                    zIndex: 10,
-                    color: likedItems[index] == 1 ? "#EE4A1B" : "#808080",
+                    maxHeight: "400px",
+                    width: "100%",
+                    objectFit: "contain",
                   }}
-                  aria-label={`Like ${product.ProductName}`}
-                >
-                  <FaHeart size={24} /> {/* Reduced from 30px */}
-                </Button>
-              </OverlayTrigger>
-            </div>
-            <div style={{ minHeight: "120px" }}> {/* Fixed height for text content */}
-              <h3
-                className="mt-2 font-weight-bold"
-                style={{
-                  fontSize: "1rem", // Reduced font size
-                  display: "flex",
-                  justifyContent: "center",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}
-              >
-                {product.ProductName}
-              </h3>
-              <p style={{ fontSize: "0.9rem" }}>{product.DesignerName}</p>
-              <p style={{ fontSize: "0.9rem" }}>
-                <b>${product.Price.toFixed(2)}</b>
-              </p>
-            </div>
+                />
+                <h3 className="mt-2 font-weight-bold">Loading...</h3>
+                <p>Loading...</p>
+                <p className="font-weight-bold">Loading...</p>
+              </div>
+            </Col>
+            <Col xs={6} md={5} className="mb-4">
+              {" "}
+              {/* Changed to xs={6} */}
+              <div className="text-center">
+                <img
+                  src={placeholderImage}
+                  alt="Loading..."
+                  className="img-fluid mb-3"
+                  style={{
+                    maxHeight: "400px",
+                    width: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+                <h3 className="mt-2 font-weight-bold">Loading...</h3>
+                <p>Loading...</p>
+                <p className="font-weight-bold">Loading...</p>
+              </div>
+            </Col>
+          </>
+        ) : (
+          // Show the current pair of products
+          currentProducts.map((product, index) => {
+            const imageUrl = `https://m.media-amazon.com/images/G/01/Shopbop/p/${product.PrimaryImageURL}`;
 
-            <Button
-              variant="warning"
-              onClick={() => handleVote(index)}
-              className="text-white font-weight-bold text-uppercase"
-              style={{
-                backgroundColor: "#EE4A1B",
-                color: "black",
-                width: "100%",
-                fontWeight: "bold",
-                fontSize: "0.9rem", // Reduced font size
-                padding: "0.375rem 0.75rem" // Smaller padding
-              }}
-            >
-              Vote
-            </Button>
-          </div>
-        </Col>
-      );
-    })
-  )}
-</Row>
+            return (
+              <Col xs={6} md={5} className="mb-4 px-2" key={product.ProductSIN}>
+                {" "}
+                {/* Changed to xs={6} and added px-2 */}
+                <div className="text-center h-100">
+                  <div
+                    style={{
+                      position: "relative",
+                      marginBottom: "1rem",
+                      height: "calc(100% - 120px)", // Adjust based on your content height
+                    }}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={product.ProductName}
+                      className="img-fluid"
+                      style={{
+                        maxHeight: "300px", // Reduced from 400px
+                        width: "100%",
+                        objectFit: "contain",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleVote(index)}
+                    />
+                    <OverlayTrigger
+                      placement="right"
+                      delay={{ show: 250, hide: 400 }}
+                      overlay={renderTooltip}
+                    >
+                      <Button
+                        variant="link"
+                        onClick={() => {
+                          e.stopPropagation();
+                          handleLike(product, index);
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: "8px", // Reduced from 12px
+                          right: "8px", // Reduced from 12px
+                          backgroundColor: "white",
+                          borderRadius: "50%",
+                          padding: "2px", // Reduced from 4px
+                          lineHeight: 1,
+                          zIndex: 10,
+                          color: likedItems[index] == 1 ? "#EE4A1B" : "#808080",
+                        }}
+                        aria-label={`Like ${product.ProductName}`}
+                      >
+                        <FaHeart size={24} /> {/* Reduced from 30px */}
+                      </Button>
+                    </OverlayTrigger>
+                  </div>
+                  <div style={{ minHeight: "120px" }}>
+                    {" "}
+                    {/* Fixed height for text content */}
+                    <h3
+                      className="mt-2 font-weight-bold"
+                      style={{
+                        fontSize: "1rem", // Reduced font size
+                        display: "flex",
+                        justifyContent: "center",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {product.ProductName}
+                    </h3>
+                    <p style={{ fontSize: "0.9rem" }}>{product.DesignerName}</p>
+                    <p style={{ fontSize: "0.9rem" }}>
+                      <b>${product.Price.toFixed(2)}</b>
+                    </p>
+                  </div>
+
+                  <Button
+                    variant="warning"
+                    onClick={() => handleVote(index)}
+                    className="text-white font-weight-bold text-uppercase"
+                    style={{
+                      backgroundColor: "#EE4A1B",
+                      color: "black",
+                      width: "100%",
+                      fontWeight: "bold",
+                      fontSize: "0.9rem", // Reduced font size
+                      padding: "0.375rem 0.75rem", // Smaller padding
+                    }}
+                  >
+                    Vote
+                  </Button>
+                </div>
+              </Col>
+            );
+          })
+        )}
+      </Row>
       {/* Tired of Voting Section */}
       <div className="text-center mt-5">
         <h2 className="mb-4 font-weight-bold">Tired of Voting?</h2>
