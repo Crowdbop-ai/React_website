@@ -628,7 +628,7 @@ const CrowdbopVoting = () => {
                     >
                       <Button
                         variant="link"
-                        onClick={() => {
+                        onClick={(e) => {
                           e.stopPropagation();
                           handleLike(product, index);
                         }}
