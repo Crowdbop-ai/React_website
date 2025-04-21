@@ -1,11 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Container, Row, Col, Pagination, Spinner, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  Container,
+  Row,
+  Col,
+  Pagination,
+  Spinner,
+  Alert,
+} from "react-bootstrap";
 
 const CrowdbopRecommended = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [userId, setUserId] = useState(sessionStorage.getItem("userId") || "");
 
   const itemsPerPage = 6;
@@ -14,9 +22,11 @@ const CrowdbopRecommended = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/fallback-recommendations');
+        const response = await fetch(
+          "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/fallback-recommendations"
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch products');
+          throw new Error("Failed to fetch products");
         }
         const data = await response.json();
         setProducts(data.fallbackProducts || []);
@@ -47,7 +57,10 @@ const CrowdbopRecommended = () => {
 
   return (
     <Container>
-      <h1 className="text-center mb-4" style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+      <h1
+        className="text-center mb-4"
+        style={{ fontFamily: "'Archivo Black', sans-serif" }}
+      >
         ITEMS YOU MIGHT LIKE...
       </h1>
 
@@ -70,20 +83,22 @@ const CrowdbopRecommended = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                  <Card.Img
-                    variant="top"
-                    src={`https://m.media-amazon.com/images/G/01/Shopbop/p/${product.PrimaryImageURL}`}
-                    style={{
-                      height: '300px',
-                      width: '100%',
-                      objectFit: 'contain',
-                      objectPosition: 'top',
-                      backgroundColor: '#ffac84'
-                    }}
-                  />
+                    <Card.Img
+                      variant="top"
+                      src={`https://m.media-amazon.com/images/G/01/Shopbop/p/${product.PrimaryImageURL}`}
+                      style={{
+                        height: "300px",
+                        width: "100%",
+                        objectFit: "contain",
+                        objectPosition: "top",
+                        backgroundColor: "#ffac84",
+                      }}
+                    />
                   </a>
                   <Card.Body>
-                    <Card.Title style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+                    <Card.Title
+                      style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                    >
                       {product.ProductName}
                     </Card.Title>
                     <Card.Subtitle className="mb-2 text-muted">

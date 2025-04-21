@@ -22,38 +22,37 @@ const CrowdbopBanner = () => {
       navigate("/");
     }
   };
-  
+
   useEffect(() => {
     const handleStorageChange = () => {
       const userId = sessionStorage.getItem("userId");
       setIsLoggedIn(!!userId);
       setUserId(userId || "");
     };
-  
+
     window.addEventListener("storage", handleStorageChange);
     handleStorageChange(); // Run on load
-  
+
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
-  
 
   return (
-    <Navbar 
-      expand="lg" 
-      style={{ 
+    <Navbar
+      expand="lg"
+      style={{
         backgroundColor: crowdBopOrange,
-        fontFamily: "'Archivo Black', sans-serif"
+        fontFamily: "'Archivo Black', sans-serif",
       }}
       className="shadow-sm"
     >
       <Container fluid>
-        <Navbar.Brand 
-          href="/" 
+        <Navbar.Brand
+          href="/"
           className="me-5"
           style={{
             fontSize: "23px",
             letterSpacing: "0.5px",
-            color: location.pathname === "/" ? "black" : "white"
+            color: location.pathname === "/" ? "black" : "white",
           }}
         >
           CrowdBop
@@ -65,56 +64,60 @@ const CrowdbopBanner = () => {
 
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link 
-              href="/voting" 
+            <Nav.Link
+              href="/voting"
               className="px-4"
               style={{
-                color: location.pathname === "/voting" ? "black" : "white"
+                color: location.pathname === "/voting" ? "black" : "white",
               }}
             >
               Voting
             </Nav.Link>
-            <Nav.Link 
-              href="/rankings" 
+            <Nav.Link
+              href="/rankings"
               className="px-4"
               style={{
-                color: location.pathname === "/rankings" ? "black" : "white"
+                color: location.pathname === "/rankings" ? "black" : "white",
               }}
             >
               Rankings
             </Nav.Link>
-            <Nav.Link 
-              href="/liked" 
+            <Nav.Link
+              href="/liked"
               className="px-4"
               style={{
-                color: location.pathname === "/liked" ? "black" : "white"
+                color: location.pathname === "/liked" ? "black" : "white",
               }}
             >
               Liked List
             </Nav.Link>
-            <Nav.Link 
-              href="/recommended" 
+            <Nav.Link
+              href="/recommended"
               className="px-4"
               style={{
-                color: location.pathname === "/recommended" ? "black" : "white"
+                color: location.pathname === "/recommended" ? "black" : "white",
               }}
             >
               Recommended Items
             </Nav.Link>
           </Nav>
 
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center',
-            marginLeft: 'auto'
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginLeft: "auto",
+            }}
+          >
             {userId && (
-              <span style={{
-                marginRight: '15px',
-                color: 'white',
-                fontSize: '0.9rem',
-                fontWeight: 'bold'
-              }}>
+              <span
+                style={{
+                  marginRight: "15px",
+                  color: "white",
+                  fontSize: "0.9rem",
+                  fontWeight: "bold",
+                }}
+              >
                 UserID: {userId}
               </span>
             )}
