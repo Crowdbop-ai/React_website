@@ -432,7 +432,7 @@ const CrowdbopVoting = () => {
                             label={range}
                             checked={userDetails.priceRange.includes(value)}
                             onChange={() => togglePriceRange(value)}
-                            disabled={userDetails.priceRange.length > 0 && !userDetails.priceRange.includes(value)}
+                            // disabled={userDetails.priceRange.length > 0 && !userDetails.priceRange.includes(value)}
                             style={{ "accentColor": "black", color: "black" }}
                           />
                         );
@@ -455,10 +455,11 @@ const CrowdbopVoting = () => {
                             border: isSelected ? '2px solid #EE4A1B' : '1px solid #ccc',
                             backgroundColor: '#f8f9fa',
                             transition: 'all 0.2s ease-in-out',
-                            cursor: userDetails.color.length > 0 && !isSelected ? 'not-allowed' : 'pointer'
+                            // cursor: userDetails.color.length > 0 && !isSelected ? 'not-allowed' : 'pointer'
+                            cursor: 'pointer',
                           }}
                           onClick={() => {
-                            if(userDetails.color.length > 0 && !isSelected) return;
+                            // if(userDetails.color.length > 0 && !isSelected) return;
                             toggleColor(color);
                           }}
                         >
@@ -563,7 +564,9 @@ const CrowdbopVoting = () => {
                   maxHeight: "300px", // Reduced from 400px
                   width: "100%",
                   objectFit: "contain",
+                  cursor: 'pointer',
                 }}
+                onClick={() => handleVote(index)}
               />
               <OverlayTrigger
                 placement="right"
@@ -572,7 +575,9 @@ const CrowdbopVoting = () => {
               >
                 <Button
                   variant="link"
-                  onClick={() => handleLike(product, index)}
+                  onClick={() => {
+                    e.stopPropagation(); 
+                    handleLike(product, index)}}
                   style={{
                     position: "absolute",
                     top: "8px", // Reduced from 12px
