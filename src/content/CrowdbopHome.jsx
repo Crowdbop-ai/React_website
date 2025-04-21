@@ -398,8 +398,8 @@ const CrowdbopHome = () => {
                             key={color} 
                             className="d-flex align-items-center rounded p-2"
                             style={{
-                              border: isSelected ? '2px solid #EE4A1B' : '1px solid #ccc',
-                              backgroundColor: '#f8f9fa',
+                              border: isSelected ? '1px solid #EE4A1B' : '1px solid #ccc',
+                              backgroundColor: isSelected ? '#FFF4EE' : '#f8f9fa',
                               transition: 'all 0.2s ease-in-out',
                               cursor: 'pointer',
                             }}
@@ -416,15 +416,13 @@ const CrowdbopHome = () => {
                                 boxShadow: '0 0 3px rgba(0,0,0,0.2)'
                               }}
                             />
-                            <span style={{ color: isDark ? '#333' : '#000', flex: 1 }}>{color}</span>
-                            <Form.Check
-                              type="checkbox"
-                              id={`color-${color}`}
-                              checked={isSelected}
-                              onChange={() => toggleColor(color)}
-                              className="ms-2"
-                              style={{ pointerEvents: 'none' }} // prevents double toggle
-                            />
+                            <span style={{ 
+                              color: isDark ? '#333' : '#000', 
+                              flex: 1,
+                              fontWeight: isSelected ? 'bold' : 'normal'
+                            }}>
+                              {color}
+                            </span>
                           </div>
                         );
                       })}

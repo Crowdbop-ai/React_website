@@ -14,12 +14,32 @@ const CrowdbopRecommended = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        // Check sessionStorage first
+        const cachedProducts = sessionStorage.getItem("cachedRecommendedProducts");
+        const cachedTimestamp = sessionStorage.getItem("cachedRecommendedProductsTimestamp");
+        
+        // Use cache if it exists and is less than 1 hour old
+        if (cachedProducts && cachedTimestamp) {
+          const age = Date.now() - parseInt(cachedTimestamp);
+          if (age < 3600000) { // 1 hour in milliseconds
+            setProducts(JSON.parse(cachedProducts));
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Fetch fresh data if no cache or cache is stale
         const response = await fetch('https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/fallback-recommendations');
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
         const data = await response.json();
-        setProducts(data.fallbackProducts || []);
+        const newProducts = data.fallbackProducts || [];
+        
+        // Update state and cache
+        setProducts(newProducts);
+        sessionStorage.setItem("cachedRecommendedProducts", JSON.stringify(newProducts));
+        sessionStorage.setItem("cachedRecommendedProductsTimestamp", Date.now().toString());
       } catch (err) {
         setError(err.message);
       } finally {
