@@ -418,6 +418,7 @@ const CrowdbopVoting = () => {
                 width: "400px",
                 overflowY: "auto",
               }}
+              className="filters-dropdown"
             >
               <Form onSubmit={handleApplyFilters}>
                 {/* User Gender */}
@@ -714,6 +715,14 @@ const CrowdbopVoting = () => {
         {`
           .form-check-input {
             border: 2px solid #000;
+          }
+          @media only screen and (max-width: 768px) {
+            .filters-dropdown div.d-grid {
+              grid-template-columns: 1fr !important;
+            }
+            .filters-dropdown > div[style*="width: 400px"] {
+              width: 100% !important;
+            }
           }
         `}
       </style>
