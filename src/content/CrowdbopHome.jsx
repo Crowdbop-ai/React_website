@@ -16,7 +16,7 @@ const CrowdbopHome = () => {
   useEffect(() => {
     const fetchDesigners = async () => {
       try {
-        const response = await fetch("src/assets/top_designers.json");
+        const response = await fetch("/top_designers.json");
         if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
