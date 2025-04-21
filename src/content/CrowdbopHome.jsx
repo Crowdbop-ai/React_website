@@ -487,6 +487,24 @@ const CrowdbopHome = () => {
                 </Card.Body>
               </Card>
             </Col>
+
+            {/* Step 6 */}
+            <Col>
+              <Card className="step-card h-100">
+                <Card.Body>
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="step-number me-3">5</div>
+                    <h3 className="step-title m-0">Liked List</h3>
+                  </div>
+                  <Card.Text className="step-text">
+                    With the liked list feature, you can mark your favorite
+                    items by clicking the "heart" button while voting. Each
+                    liked item is automatically saved to your personal
+                    collection, creating a curated list of your top picks.
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
           </Row>
         </Card.Body>
       </Card>
