@@ -15,7 +15,58 @@ const CrowdbopVoting = () => {
   const [categories, setCategories] = useState([]); // List of available categories
   const [selectedCategory, setSelectedCategory] = useState(sessionStorage.getItem("selectedCategory") || "shoes"); // Default category
   const [showCategories, setShowCategories] = useState(false); // Control dropdown visibility
+  const [showFilters, setShowFilters] = useState(false); // Control filters visibility
   const [likedItems, setLikedItems] = useState([0, 0]);
+  const [userDetails, setUserDetails] = useState({
+    gender: '',
+    priceRange: [],
+    color: []
+  });
+
+  console.log(userDetails);
+
+  const colorOptions = [
+    'Red', 'Pink', 'Orange', 'Yellow', 'Green', 'Blue',
+    'Purple', 'White', 'Cream', 'Beige', 'Brown',
+    'Black', 'Gray', 'Silver', 'Gold', 'Metallic',
+    'Transparent', 'Multicolor', 'Other'
+  ];
+
+
+  const togglePriceRange = (range) => {
+    setUserDetails(prev => {
+      const currentRanges = prev.priceRange;
+      if (currentRanges.includes(range)) {
+        return {
+          ...prev,
+          priceRange: currentRanges.filter(r => r !== range)
+        };
+      } else {
+        return {
+          ...prev,
+          priceRange: [...currentRanges, range]
+        };
+      }
+    });
+  };
+
+  const toggleColor = (color) => {
+    setUserDetails(prev => {
+      const currentColors = prev.color;
+      if (currentColors.includes(color)) {
+        return {
+          ...prev,
+          color: currentColors.filter(c => c !== color)
+        };
+      } else {
+        return {
+          ...prev,
+          color: [...currentColors, color]
+        };
+      }
+    });
+  };
+
 
   // Fetch available categories on page load
   useEffect(() => {
@@ -54,37 +105,56 @@ const CrowdbopVoting = () => {
     fetchCategories();
   }, []);
 
-  // Fetch the first pair of products on page load and when category changes
-  useEffect(() => {
-    const fetchInitialProducts = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=${selectedCategory}`
-        );
-        const data = await response.json();
-        setCurrentProducts(data.products);
+  // Extracted function to fetch products based on current filters.
+  const fetchInitialProducts = async () => {
+    setIsLoading(true);
+    try {
+      const queryParams = new URLSearchParams({
+        category: selectedCategory,
+        gender: userDetails.gender,
+        priceRange: userDetails.priceRange.join(','),
+        color: userDetails.color.join(',')
+      });
+      const response = await fetch(
+        `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?${queryParams.toString()}`
+      );
+      console.log(`https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?${queryParams.toString()}`);
+      const data = await response.json();
+      setCurrentProducts(data.products);
+      // Fetch the next pair immediately after.
+      fetchNextPair();
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+    }
+  };
 
-        // Fetch the next pair immediately after the first pair is fetched
-        fetchNextPair();
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        // After 1 second, hide the loading placeholder
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000);
-      }
-    };
-
+  // New handler for applying filters.
+  const handleApplyFilters = (e) => {
+    e.preventDefault();
     fetchInitialProducts();
-  }, [selectedCategory]); // Re-fetch when selected category changes
+    setShowFilters(false);
+  };
+
+  // useEffect now calls the extracted function.
+  useEffect(() => {
+    fetchInitialProducts();
+  }, [selectedCategory]);
 
   // Function to fetch the next pair of products
   const fetchNextPair = async () => {
     try {
+      const queryParams = new URLSearchParams({
+        category: selectedCategory,
+        gender: userDetails.gender,
+        priceRange: userDetails.priceRange.join(','),
+        color: userDetails.color.join(',')
+      });
       const response = await fetch(
-        `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?category=${selectedCategory}`
+        `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/comparison?${queryParams.toString()}`
       );
       const data = await response.json();
       setNextProducts(data.products);
@@ -122,6 +192,13 @@ const CrowdbopVoting = () => {
     } catch (error) {
       console.error("Error liking product:", error);
     }
+  };
+
+  const handleUserDetailChange = (field, value) => {
+    setUserDetails((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   // Handle modal submission
@@ -290,7 +367,139 @@ const CrowdbopVoting = () => {
             </div>
           )}
         </div>
+        <div
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            padding: "5px 10px",
+            marginLeft: "10px",
+            background: "#EE4A1B",
+            position: "relative",
+            zIndex: 1000,
+            cursor: "pointer",
+            color: "black",
+            fontWeight: "bold",
+            minWidth: "200px",
+            textAlign: "center",
+          }}
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          Filters ▼
+          {showFilters && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                background: "white",
+                border: "1px solid #ddd",
+                borderRadius: "0 0 5px 5px",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                maxHeight: "500px",
+                width: "400px",
+                overflowY: "auto",
+              }}
+            >
+              <Form onSubmit={handleApplyFilters}>
+                {/* User Gender */}
+                <Form.Group className="mb-3 p-3">
+                  <Form.Label>What is your gender?</Form.Label>
+                  <Form.Select
+                    value={userDetails.gender}
+                    onChange={(e) => handleUserDetailChange('gender', e.target.value)}
+                  >
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </Form.Select>
+                </Form.Group>
+
+                {/* Price Range Multi-Select */}
+                <Form.Group className="mb-3 p-3">
+                  <Form.Label>What are your preferred price ranges? (Select all that apply)</Form.Label>
+                  <div className="d-flex flex-column" style={{ gap: '8px' }}>
+                    {['Budget: Under $50', 'Affordable: $50 – $150', 'Mid-Range: $150 – $500',
+                      'Premium: $500 – $1000', 'Luxury: $1000+'].map((range) => {
+                        const value = range.split(':')[0].toLowerCase().trim();
+                        return (
+                          <Form.Check
+                            key={value}
+                            type="checkbox"
+                            id={`price-${value}`}
+                            label={range}
+                            checked={userDetails.priceRange.includes(value)}
+                            onChange={() => togglePriceRange(value)}
+                            disabled={userDetails.priceRange.length > 0 && !userDetails.priceRange.includes(value)}
+                            style={{ "accentColor": "black", color: "black" }}
+                          />
+                        );
+                      })}
+                  </div>
+                </Form.Group>
+
+                {/* Color Preferences Multi-Select */}
+                <Form.Group className="mb-4 p-3">
+                  <Form.Label className="fw-bold">What are your preferred colors? (Select all that apply)</Form.Label>
+                  <div className="d-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                    {colorOptions.map((color) => {
+                      const isDark = ['Black', 'Blue', 'Brown', 'Gray', 'Green', 'Purple', 'Red'].includes(color);
+                      const isSelected = userDetails.color.includes(color);
+                      return (
+                        <div
+                          key={color}
+                          className="d-flex align-items-center rounded p-2"
+                          style={{
+                            border: isSelected ? '2px solid #EE4A1B' : '1px solid #ccc',
+                            backgroundColor: '#f8f9fa',
+                            transition: 'all 0.2s ease-in-out',
+                            cursor: userDetails.color.length > 0 && !isSelected ? 'not-allowed' : 'pointer'
+                          }}
+                          onClick={() => {
+                            if(userDetails.color.length > 0 && !isSelected) return;
+                            toggleColor(color);
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '24px',
+                              height: '24px',
+                              backgroundColor: color.toLowerCase(),
+                              border: '1px solid #ddd',
+                              borderRadius: '50%',
+                              marginRight: '12px',
+                              boxShadow: '0 0 3px rgba(0,0,0,0.2)'
+                            }}
+                          />
+                          <span style={{ color: isDark ? '#333' : '#000', flex: 1 }}>{color}</span>
+                          <Form.Check
+                            type="checkbox"
+                            id={`color-${color}`}
+                            checked={isSelected}
+                            onChange={() => toggleColor(color)}
+                            className="ms-2"
+                            style={{ pointerEvents: 'none' }} // prevents double toggle
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Form.Group>
+                <Button
+                 className="mb-3 p-2" variant="light" type="submit"
+                 style={{
+                  border: "2px solid #ddd",
+                  borderRadius: "5px",
+                 }}
+                 >Apply Filters</Button>
+              </Form>
+            </div>
+          )}
+        </div>
       </div>
+
 
       {/* Product Display */}
       <Row className="justify-content-center">
@@ -430,6 +639,13 @@ const CrowdbopVoting = () => {
           </Button>
         </Link>
       </div>
+      <style>
+        {`
+          .form-check-input {
+            border: 2px solid #000;
+          }
+        `}
+      </style>
     </Container>
   );
 };
