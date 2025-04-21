@@ -19,53 +19,26 @@ function CrowdbopLikedItems() {
       setIsLoading(false);
       return;
     }
-
-    fetch(
-      `https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/liked-items?userId=${userId}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("API Response:", data);
-        setLikedItems(data.likedItems || []); // Store fetched liked items
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching liked items:", error);
-        setIsLoading(false);
-      });
-  }, [userId]);
-
-  // Function to delete an item via the AWS API Gateway
-  const handleDelete = (productSIN, categoryId) => {
-    fetch(
-      "https://s5g4aq9wn1.execute-api.us-east-2.amazonaws.com/prod/remove-like",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          productSIN: productSIN,
-          categoryId: categoryId,
-        }),
-      }
-    )
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to delete item.");
-        }
-        // On success, remove the item from state
-        setLikedItems((prevItems) =>
-          prevItems.filter((item) => item.ProductSIN !== productSIN)
+    // If user is not logged in, show a message with a disabled login button
+    // console.log(userId);
+    if (!userId) {
+        return (
+            <Container className="text-center" style={{ marginTop: "5rem" }}>
+                <h2>You are not logged in.</h2>
+                <p>Please log in to view your liked items.</p>
+            </Container>
         );
-      })
-      .catch((error) => {
-        console.error("Error deleting item:", error);
-        alert("Failed to delete item. Please try again.");
-      });
-  };
+    }
 
+  //userID submission
+  const handleSubmit = () => {
+    if (userId.trim()) {
+      sessionStorage.setItem("userId", userId); // Store userId in session storage
+      setShowModal(false); // Close the modal
+    } else {
+      alert("Please enter a valid user ID.");
+    }
+  };
   // If user is not logged in, show a message with a disabled login button
   // console.log(userId);
   if (!userId) {
@@ -80,11 +53,8 @@ function CrowdbopLikedItems() {
   // Show loading message while fetching data
   if (isLoading) {
     return (
-      <h2 className="text-center" style={{ marginTop: "2rem" }}>
-        Loading your liked items...
-      </h2>
-    );
-  }
+        <Container fluid style={{ marginTop: "2rem", maxWidth: "800px" }}>
+            <h1 className="text-center mb-4">Your Liked Items</h1>
 
   return (
     <Container fluid style={{ marginTop: "2rem", maxWidth: "800px" }}>
