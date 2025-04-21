@@ -502,125 +502,135 @@ const CrowdbopVoting = () => {
 
 
       {/* Product Display */}
-      <Row className="justify-content-center">
-        {isLoading ? (
-          // Show loading placeholder only on initial load
-          <>
-            <Col md={5} className="mb-4">
-              <div className="text-center">
-                <img
-                  src={placeholderImage}
-                  alt="Loading..."
-                  className="img-fluid mb-3"
+{/* Product Display */}
+<Row className="justify-content-center">
+  {isLoading ? (
+    // Show loading placeholder only on initial load
+    <>
+      <Col xs={6} md={5} className="mb-4"> {/* Changed to xs={6} */}
+        <div className="text-center">
+          <img
+            src={placeholderImage}
+            alt="Loading..."
+            className="img-fluid mb-3"
+            style={{
+              maxHeight: "400px",
+              width: "100%",
+              objectFit: "contain",
+            }}
+          />
+          <h3 className="mt-2 font-weight-bold">Loading...</h3>
+          <p>Loading...</p>
+          <p className="font-weight-bold">Loading...</p>
+        </div>
+      </Col>
+      <Col xs={6} md={5} className="mb-4"> {/* Changed to xs={6} */}
+        <div className="text-center">
+          <img
+            src={placeholderImage}
+            alt="Loading..."
+            className="img-fluid mb-3"
+            style={{
+              maxHeight: "400px",
+              width: "100%",
+              objectFit: "contain",
+            }}
+          />
+          <h3 className="mt-2 font-weight-bold">Loading...</h3>
+          <p>Loading...</p>
+          <p className="font-weight-bold">Loading...</p>
+        </div>
+      </Col>
+    </>
+  ) : (
+    // Show the current pair of products
+    currentProducts.map((product, index) => {
+      const imageUrl = `https://m.media-amazon.com/images/G/01/Shopbop/p/${product.PrimaryImageURL}`;
+
+      return (
+        <Col xs={6} md={5} className="mb-4 px-2" key={product.ProductSIN}> {/* Changed to xs={6} and added px-2 */}
+          <div className="text-center h-100">
+            <div style={{ 
+              position: "relative", 
+              marginBottom: "1rem",
+              height: "calc(100% - 120px)" // Adjust based on your content height
+            }}>
+              <img
+                src={imageUrl}
+                alt={product.ProductName}
+                className="img-fluid"
+                style={{
+                  maxHeight: "300px", // Reduced from 400px
+                  width: "100%",
+                  objectFit: "contain",
+                }}
+              />
+              <OverlayTrigger
+                placement="right"
+                delay={{ show: 250, hide: 400 }}
+                overlay={renderTooltip}
+              >
+                <Button
+                  variant="link"
+                  onClick={() => handleLike(product, index)}
                   style={{
-                    maxHeight: "400px",
-                    width: "100%",
-                    objectFit: "contain",
+                    position: "absolute",
+                    top: "8px", // Reduced from 12px
+                    right: "8px", // Reduced from 12px
+                    backgroundColor: "white",
+                    borderRadius: "50%",
+                    padding: "2px", // Reduced from 4px
+                    lineHeight: 1,
+                    zIndex: 10,
+                    color: likedItems[index] == 1 ? "#EE4A1B" : "#808080",
                   }}
-                />
-                <h3 className="mt-2 font-weight-bold">Loading...</h3>
-                <p>Loading...</p>
-                <p className="font-weight-bold">Loading...</p>
-              </div>
-            </Col>
-            <Col md={5} className="mb-4">
-              <div className="text-center">
-                <img
-                  src={placeholderImage}
-                  alt="Loading..."
-                  className="img-fluid mb-3"
-                  style={{
-                    maxHeight: "400px",
-                    width: "100%",
-                    objectFit: "contain",
-                  }}
-                />
-                <h3 className="mt-2 font-weight-bold">Loading...</h3>
-                <p>Loading...</p>
-                <p className="font-weight-bold">Loading...</p>
-              </div>
-            </Col>
-          </>
-        ) : (
-          // Show the current pair of products
-          currentProducts.map((product, index) => {
-            const imageUrl = `https://m.media-amazon.com/images/G/01/Shopbop/p/${product.PrimaryImageURL}`;
+                  aria-label={`Like ${product.ProductName}`}
+                >
+                  <FaHeart size={24} /> {/* Reduced from 30px */}
+                </Button>
+              </OverlayTrigger>
+            </div>
+            <div style={{ minHeight: "120px" }}> {/* Fixed height for text content */}
+              <h3
+                className="mt-2 font-weight-bold"
+                style={{
+                  fontSize: "1rem", // Reduced font size
+                  display: "flex",
+                  justifyContent: "center",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
+                }}
+              >
+                {product.ProductName}
+              </h3>
+              <p style={{ fontSize: "0.9rem" }}>{product.DesignerName}</p>
+              <p style={{ fontSize: "0.9rem" }}>
+                <b>${product.Price.toFixed(2)}</b>
+              </p>
+            </div>
 
-            return (
-              <Col md={5} className="mb-4" key={product.ProductSIN}>
-                <div className="text-center">
-                  <div style={{ position: "relative", marginBottom: "1rem" }}>
-                    <img
-                      src={imageUrl}
-                      alt={product.ProductName}
-                      className="img-fluid"
-                      style={{
-                        maxHeight: "400px",
-                        width: "100%",
-                        objectFit: "contain",
-                      }}
-                    />
-                    <OverlayTrigger
-                      placement="right"
-                      delay={{ show: 250, hide: 400 }}
-                      overlay={renderTooltip}
-                    >
-                      <Button
-                        variant="link"
-                        onClick={() => handleLike(product, index)}
-                        style={{
-                          position: "absolute",
-                          top: "12px",
-                          right: "12px",
-                          backgroundColor: "white",
-                          borderRadius: "50%",
-                          padding: "4px",
-                          lineHeight: 1,
-                          zIndex: 10,
-                          color: likedItems[index] == 1 ? "#EE4A1B" : "#808080",
-                        }}
-                        aria-label={`Like ${product.ProductName}`}
-                      >
-                        <FaHeart size={30} />
-                      </Button>
-                    </OverlayTrigger>
-                  </div>
-                  <h3
-                    className="mt-2 font-weight-bold"
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {product.ProductName}
-                  </h3>
-                  <p>{product.DesignerName}</p>
-                  <p>
-                    <b>${product.Price.toFixed(2)}</b>
-                  </p>
-
-                  <Button
-                    variant="warning"
-                    onClick={() => handleVote(index)}
-                    className="text-white font-weight-bold text-uppercase"
-                    style={{
-                      backgroundColor: "#EE4A1B",
-                      color: "black",
-                      width: "100%",
-                      fontWeight: "bold",
-                    }}
-                    // disabled={!userId} // Disable button if no user ID is provided
-                  >
-                    Vote
-                  </Button>
-                </div>
-              </Col>
-            );
-          })
-        )}
-      </Row>
-
+            <Button
+              variant="warning"
+              onClick={() => handleVote(index)}
+              className="text-white font-weight-bold text-uppercase"
+              style={{
+                backgroundColor: "#EE4A1B",
+                color: "black",
+                width: "100%",
+                fontWeight: "bold",
+                fontSize: "0.9rem", // Reduced font size
+                padding: "0.375rem 0.75rem" // Smaller padding
+              }}
+            >
+              Vote
+            </Button>
+          </div>
+        </Col>
+      );
+    })
+  )}
+</Row>
       {/* Tired of Voting Section */}
       <div className="text-center mt-5">
         <h2 className="mb-4 font-weight-bold">Tired of Voting?</h2>
